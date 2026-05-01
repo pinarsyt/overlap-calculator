@@ -1,0 +1,16 @@
+[
+  {
+    "input_type": "experimental",
+    "sample_id": "Coumarin_1",
+    "source_path": "../../input/files/organic_uvvis_photochemcad_dataset.xlsx",
+    "series_name": "Coumarin_1",
+    "sheet_name": "program_input_absorbance"
+  },
+  {
+    "input_type": "experimental",
+    "sample_id": "Fluorescein",
+    "source_path": "../../input/files/organic_uvvis_photochemcad_dataset.xlsx",
+    "series_name": "Fluorescein",
+    "sheet_name": "program_input_absorbance"
+  }
+]

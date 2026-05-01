@@ -1,0 +1,281 @@
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames*,x11names*}{xcolor}
+\documentclass[
+  11pt,
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp}
+\else
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath}
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{
+  \IfFileExists{parskip.sty}{
+    \usepackage{parskip}
+  }{
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{}
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={blue},
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same}
+\usepackage[margin=2cm]{geometry}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc}
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em}
+\providecommand{\tightlist}{
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+\usepackage{fvextra}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,fontsize=\footnotesize,commandchars=\\\{\}}
+\RecustomVerbatimEnvironment{verbatim}{Verbatim}{breaklines,breakanywhere,fontsize=\footnotesize}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\setlist[itemize]{itemsep=2pt,parsep=2pt}
+\setlist[enumerate]{itemsep=2pt,parsep=2pt}
+\usepackage{etoolbox}
+\AtBeginEnvironment{longtable}{\footnotesize}
+\AtBeginEnvironment{tabular}{\footnotesize}
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{4pt}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\titleformat{\section}{\Large\bfseries}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{1.4em}{0.6em}
+\titlespacing*{\subsection}{0pt}{1.0em}{0.4em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em plus 0.1em minus 0.1em}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\nouppercase{\leftmark}}
+\fancyhead[R]{\thepage}
+\fancyfoot[C]{overlap-calculator case studies}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{14pt}
+\sloppy
+\ifLuaTeX
+  \usepackage{selnolig}
+\fi
+
+\title{overlap-calculator Case Studies}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{Index of all 11 worked examples}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+{
+\hypersetup{linkcolor=}
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\hypertarget{overlap-calculator-case-studies}{
+\section{overlap-calculator Case
+Studies}\label{overlap-calculator-case-studies}}
+
+This directory contains 11 worked case studies, each isolating one
+\textbf{user-selectable feature} of \texttt{overlap-calculator}. Every
+case study ships in three documentation formats --- Markdown, LaTeX
+source, and a typeset PDF --- so the same content is browsable on
+GitHub, editable as LaTeX, and printable as a stand-alone PDF.
+
+Each case study is intentionally small (\textbf{2 samples × 2 light
+sources}) so a full run finishes in seconds and the repository stays
+lean. The case isolates one knob at a time: light source, plot DPI,
+broadening width, Beer--Lambert reference, wavelength grid, sheet
+selection, etc.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{layout-shared-by-every-case}{
+\subsection{Layout shared by every
+case}\label{layout-shared-by-every-case}}
+
+\begin{verbatim}
+case_studies/<NN>_<name>/
++-- input.json
++-- submit.py
++-- README.md
++-- README.tex
++-- README.pdf
++-- output/
+    +-- cli/
+    |   +-- tables/{results,results_timings,descriptor_summary}.*
+    |   +-- plots/...
+    +-- api/
+        +-- analysis_outputs.zip
+        +-- tables/...
+        +-- plots/...
+\end{verbatim}
+
+\texttt{input.json} is the 2-entry manifest that points at the bundled
+files under
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/input/files}{\texttt{../input/files/}}.
+\texttt{submit.py} drives both the CLI and the HTTP API in one run. The
+Markdown README is the narrative for the case; the LaTeX and PDF carry
+the same content in typeset form. The \texttt{output/} tree is produced
+once you run \texttt{submit.py}; case study 07 produces no
+\texttt{plots/} directory because it turns plotting off.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{case-study-index}{
+\subsection{Case study index}\label{case-study-index}}
+
+If this is your first time using \texttt{overlap-calculator}, start with
+\textbf{Case Study 01} --- its \textbf{§1 Prerequisites} is the install
+/ environment / API-startup walkthrough that every other case study
+links to instead of repeating.
+
+\begin{longtable}[]{@{}llllcc@{}}
+\toprule
+Case & Folder & Feature exercised & Inputs & LaTeX & PDF \\
+\midrule
+\endhead
+01 &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/01_theoretical_only/README.md}{\texttt{01\_theoretical\_only}}
+& Canonical TD-DFT-only workflow (anchor) & 2 \texttt{.out} &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/01_theoretical_only/README.tex}{tex}
+&
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/01_theoretical_only/README.pdf}{pdf} \\
+02 &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/02_experimental_only/README.md}{\texttt{02\_experimental\_only}}
+& Measured spectra only & 2 series in 1 \texttt{.xlsx} &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/02_experimental_only/README.tex}{tex}
+&
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/02_experimental_only/README.pdf}{pdf} \\
+03 &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/03_mixed_theory_experiment/README.md}{\texttt{03\_mixed\_theory\_experiment}}
+& Theoretical + experimental in one manifest & 2 \texttt{.out} + 2
+series &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/03_mixed_theory_experiment/README.tex}{tex}
+&
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/03_mixed_theory_experiment/README.pdf}{pdf} \\
+04 &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/04_custom_light_source/README.md}{\texttt{04\_custom\_light\_source}}
+& \texttt{-\/-light-source-file} / \texttt{light\_source\_files} & 2
+\texttt{.out} + 1 CSV &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/04_custom_light_source/README.tex}{tex}
+&
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/04_custom_light_source/README.pdf}{pdf} \\
+05 &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/05_default_light_source_selection/README.md}{\texttt{05\_default\_light\_source\_selection}}
+& \texttt{-\/-default-light-sources} subset & 2 \texttt{.out} &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/05_default_light_source_selection/README.tex}{tex}
+&
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/05_default_light_source_selection/README.pdf}{pdf} \\
+06 &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/06_plot_dpi/README.md}{\texttt{06\_plot\_dpi}}
+& \texttt{-\/-plot-dpi\ 600} for publication TIFFs & 2 \texttt{.out} &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/06_plot_dpi/README.tex}{tex}
+&
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/06_plot_dpi/README.pdf}{pdf} \\
+07 &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/07_table_only/README.md}{\texttt{07\_table\_only}}
+& \texttt{-\/-no-plot-outputs} / \texttt{plot\_outputs=false} & 2
+\texttt{.out} &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/07_table_only/README.tex}{tex}
+&
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/07_table_only/README.pdf}{pdf} \\
+08 &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/08_broadening_sigma/README.md}{\texttt{08\_broadening\_sigma}}
+& \texttt{-\/-sigma-ev} (0.30 → 0.20 eV) & 2 \texttt{.out} &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/08_broadening_sigma/README.tex}{tex}
+&
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/08_broadening_sigma/README.pdf}{pdf} \\
+09 &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/09_beer_lambert_tuning/README.md}{\texttt{09\_beer\_lambert\_tuning}}
+& \texttt{-\/-concentration-m} and \texttt{-\/-path-cm} & 2
+\texttt{.out} &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/09_beer_lambert_tuning/README.tex}{tex}
+&
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/09_beer_lambert_tuning/README.pdf}{pdf} \\
+10 &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/10_wavelength_grid/README.md}{\texttt{10\_wavelength\_grid}}
+& \texttt{-\/-wl-min} / \texttt{-\/-wl-max} / \texttt{-\/-num-points} &
+2 \texttt{.out} &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/10_wavelength_grid/README.tex}{tex}
+&
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/10_wavelength_grid/README.pdf}{pdf} \\
+11 &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/11_sheet_overrides/README.md}{\texttt{11\_sheet\_overrides}}
+& \texttt{sheet\_name} (CLI) / \texttt{sheet\_overrides} (API) & 2
+series in 1 \texttt{.xlsx} &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/11_sheet_overrides/README.tex}{tex}
+&
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/11_sheet_overrides/README.pdf}{pdf} \\
+\bottomrule
+\end{longtable}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{bundled-inputs}{
+\subsection{Bundled inputs}\label{bundled-inputs}}
+
+Every case study draws from the same files in
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/input/files}{\texttt{../input/files/}}:
+
+\begin{itemize}
+\tightlist
+\item
+  13 Gaussian TD-DFT outputs (the case studies use 2 of them to keep
+  runs short).
+\item
+  One PhotochemCAD-derived Excel workbook with 8 numeric absorbance
+  series (the case studies use 2 of them).
+\end{itemize}
+
+\begin{quote}
+\textbf{Citation for the experimental workbook.} The bundled
+experimental absorbance data is derived from M. Taniguchi \& J. S.
+Lindsey, "Database of absorption and fluorescence spectra of
+\textgreater300 common compounds for use in PhotochemCAD",
+\emph{Photochem. Photobiol.} \textbf{94} (2018) 290--327. See the
+project
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/README.md\#acknowledgement-of-third-party-data}{README}
+for the full acknowledgement and BibTeX entries (covering both the
+bundled light sources and the experimental workbook).
+\end{quote}
+
+\end{document}

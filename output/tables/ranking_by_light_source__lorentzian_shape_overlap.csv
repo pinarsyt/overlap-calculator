@@ -1,0 +1,66 @@
+light_source_name,rank,sample_id,source_type,absorption_unit,light_source_unit,gaussian_absorbed_fraction,lorentzian_absorbed_fraction,gaussian_shape_overlap,lorentzian_shape_overlap
+AM15G,1,4c_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",W m^-2 nm^-1,0.22301549084201766,0.17379033306687144,0.7952110296884214,0.8299042955948821
+AM15G,2,3e_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",W m^-2 nm^-1,0.3312806376262446,0.28472990505709816,0.7173293031215805,0.8079591779275814
+AM15G,3,3g_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",W m^-2 nm^-1,0.25156410001205654,0.2193182933730676,0.6437253268490498,0.7572106837295302
+AM15G,4,3f_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",W m^-2 nm^-1,0.16897193763061627,0.14626194117657712,0.6037617831939711,0.7180561231744245
+AM15G,5,4g_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",W m^-2 nm^-1,0.2710536439680788,0.22780506690522406,0.5846119979005773,0.6618446224990249
+AM15G,6,Fluorescein,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",W m^-2 nm^-1,0.27734989573873303,0.27734989573873303,0.3535070820671439,0.3535070820671439
+AM15G,7,Coumarin_6,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",W m^-2 nm^-1,0.1593223907328072,0.1593223907328072,0.2651767781496991,0.2651767781496991
+AM15G,8,Rhodamine_B,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",W m^-2 nm^-1,0.19591170892397838,0.19591170892397838,0.24699568706344383,0.24699568706344383
+AM15G,9,Rhodamine_6G,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",W m^-2 nm^-1,0.19612489546881845,0.19612489546881845,0.24638166381634433,0.24638166381634433
+AM15G,10,Eosin_Y,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",W m^-2 nm^-1,0.1805633907312021,0.1805633907312021,0.22495230593813964,0.22495230593813964
+AM15G,11,Coumarin_314,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",W m^-2 nm^-1,0.10045613072874915,0.10045613072874915,0.1902295938643521,0.1902295938643521
+AM15G,12,Coumarin_1,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",W m^-2 nm^-1,0.03076417399056257,0.03076417399056257,0.10447496917096342,0.10447496917096342
+AM15G,13,Pyrene,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",W m^-2 nm^-1,0.013597085412103992,0.013597085412103992,0.029331671523281706,0.029331671523281706
+CIEFL10,1,4c_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.2229914166416992,0.17185448766177605,0.985237048937642,0.9850963245818783
+CIEFL10,2,3e_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.4007726585771049,0.3282690209654588,0.9663996933215354,0.9802476217996446
+CIEFL10,3,3g_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.32907311614041335,0.26331626996248764,0.9724484854323434,0.9798577108144662
+CIEFL10,4,3f_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.21971067524630802,0.17447980186531606,0.9438503974432021,0.9695617184453854
+CIEFL10,5,4g_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.23537455329994583,0.21196570044332358,0.8774914774418061,0.9504424951709146
+CIEFL10,6,Rhodamine_6G,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.25226474641262214,0.25226474641262214,0.5677069240780793,0.5677069240780793
+CIEFL10,7,Eosin_Y,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.18388793674299944,0.18388793674299944,0.5221730269476736,0.5221730269476736
+CIEFL10,8,Rhodamine_B,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.29661928193366915,0.29661928193366915,0.5139172930324493,0.5139172930324493
+CIEFL10,9,Coumarin_6,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.18049988459943966,0.18049988459943966,0.36192731101677256,0.36192731101677256
+CIEFL10,10,Fluorescein,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.2705807913678156,0.2705807913678156,0.3554126860997563,0.3554126860997563
+CIEFL10,11,Coumarin_314,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.11803454776987946,0.11803454776987946,0.25550152218596744,0.25550152218596744
+CIEFL10,12,Pyrene,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.00545977322051988,0.00545977322051988,0.09973258780837142,0.09973258780837142
+CIEFL10,13,Coumarin_1,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.0038733171148478754,0.0038733171148478754,0.03942717589370072,0.03942717589370072
+LEDB2,1,3e_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.41369606052996866,0.3388256199520037,0.943916076115075,0.9582037226186065
+LEDB2,2,3f_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.23175230181823778,0.18337835978252828,0.918451196524779,0.9374892832238393
+LEDB2,3,4c_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.25158538800375674,0.19097898334577593,0.950305902253067,0.9340587298547331
+LEDB2,4,3g_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.31836207145153606,0.2593683018490536,0.887048930307912,0.9139590424256103
+LEDB2,5,4g_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.31245597462114527,0.2604121394985844,0.7971337885571808,0.881500527080207
+LEDB2,6,Rhodamine_B,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.19323216020092476,0.19323216020092476,0.2862708878592347,0.2862708878592347
+LEDB2,7,Rhodamine_6G,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.16297520883920552,0.16297520883920552,0.24583399906011014,0.24583399906011014
+LEDB2,8,Eosin_Y,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.14041625453962178,0.14041625453962178,0.22196838838769722,0.22196838838769722
+LEDB2,9,Fluorescein,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.14191026785164396,0.14191026785164396,0.18890573973471017,0.18890573973471017
+LEDB2,10,Coumarin_6,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.08047420454193234,0.08047420454193234,0.13523294725806348,0.13523294725806348
+LEDB2,11,Coumarin_314,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.040996865355904,0.040996865355904,0.09073802324688933,0.09073802324688933
+LEDB2,12,Pyrene,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.005266060423196087,0.005266060423196087,0.012151272940399326,0.012151272940399326
+LEDB2,13,Coumarin_1,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.00014230984862377552,0.00014230984862377552,0.0016540901029524187,0.0016540901029524187
+LEDB3,1,3e_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.4121326843926675,0.3361439194436247,0.9514098832820012,0.9623919461404857
+LEDB3,2,3g_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.3279411565772969,0.26367314019225113,0.9333186247085664,0.9492207094019836
+LEDB3,3,4c_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.24015628387918198,0.18356789760387654,0.9492295600449867,0.9392845159994535
+LEDB3,4,3f_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.22777259543988065,0.1798395320988859,0.9162088752936258,0.9382442815905292
+LEDB3,5,4g_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.274195992422748,0.23632823140241302,0.7152817275307217,0.8248141524003904
+LEDB3,6,Rhodamine_B,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.22691375932193678,0.22691375932193678,0.33585875948789096,0.33585875948789096
+LEDB3,7,Rhodamine_6G,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.20469582304733167,0.20469582304733167,0.2967338089949421,0.2967338089949421
+LEDB3,8,Fluorescein,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.2210284109951957,0.2210284109951957,0.27928166147006,0.27928166147006
+LEDB3,9,Eosin_Y,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.18154163333758797,0.18154163333758797,0.27082255009576134,0.27082255009576134
+LEDB3,10,Coumarin_6,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.13193361560985906,0.13193361560985906,0.21211944337443453,0.21211944337443453
+LEDB3,11,Coumarin_314,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.07907847936853221,0.07907847936853221,0.14213937642150498,0.14213937642150498
+LEDB3,12,Pyrene,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.005271889993024399,0.005271889993024399,0.012468153771382,0.012468153771382
+LEDB3,13,Coumarin_1,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.00016594151779010936,0.00016594151779010936,0.00255062932607473,0.00255062932607473
+LEDB4,1,4c_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.23411987780651597,0.1795299137782664,0.9643111906963994,0.9679241527672445
+LEDB4,2,3g_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.3299261952492401,0.26439734882360205,0.9535649444074964,0.9590761867938732
+LEDB4,3,3e_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.40813078867044933,0.33294077598970145,0.9374167216088671,0.9485505689926109
+LEDB4,4,3f_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.22310292731882234,0.17695325752805344,0.8887820385615305,0.9172484302992833
+LEDB4,5,4g_td,theoretical,"absorptance (Beer-Lambert at c=1e-05 M, L=1 cm)",relative,0.25473989989386364,0.22419167292574457,0.7772674381000193,0.8622745743622758
+LEDB4,6,Rhodamine_B,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.2422022168209671,0.2422022168209671,0.36143767427614615,0.36143767427614615
+LEDB4,7,Fluorescein,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.25772008941025326,0.25772008941025326,0.32673244442010846,0.32673244442010846
+LEDB4,8,Rhodamine_6G,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.21512686768481326,0.21512686768481326,0.31521911376659134,0.31521911376659134
+LEDB4,9,Eosin_Y,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.18874930347796723,0.18874930347796723,0.28467488533314256,0.28467488533314256
+LEDB4,10,Coumarin_6,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.17431665234640464,0.17431665234640464,0.27549921135546135,0.27549921135546135
+LEDB4,11,Coumarin_314,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.10325353650706558,0.10325353650706558,0.18018879442335853,0.18018879442335853
+LEDB4,12,Pyrene,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.005259847685457967,0.005259847685457967,0.016582643510997554,0.016582643510997554
+LEDB4,13,Coumarin_1,experimental,"absorbance proxy (user-provided signal, no Beer-Lambert)",relative,0.00013321126814098025,0.00013321126814098025,0.00274323496549957,0.00274323496549957

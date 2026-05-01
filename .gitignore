@@ -1,0 +1,44 @@
+﻿# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env
+
+# Build artifacts
+build/
+dist/
+*.egg
+*.egg-info/
+overlap_calculator.egg-info/
+
+# Logs and local outputs
+*.log
+# output/
+
+# Local input data (large/raw files)
+# input/
+# input/input.json
+
+# IDE/editor settings
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# LaTeX build artefacts
+docs/*.aux
+docs/*.log
+docs/*.out
+docs/*.toc
+docs/*.synctex.gz
+

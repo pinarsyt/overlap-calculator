@@ -1,0 +1,30 @@
+[
+  {
+    "input_type": "theoretical",
+    "sample_id": "3e_td",
+    "source_path": "../../input/files/slurm-2829207.out",
+    "series_name": null,
+    "sheet_name": null
+  },
+  {
+    "input_type": "theoretical",
+    "sample_id": "3f_td",
+    "source_path": "../../input/files/slurm-2829212.out",
+    "series_name": null,
+    "sheet_name": null
+  },
+  {
+    "input_type": "experimental",
+    "sample_id": "Coumarin_1",
+    "source_path": "../../input/files/organic_uvvis_photochemcad_dataset.xlsx",
+    "series_name": "Coumarin_1",
+    "sheet_name": "program_input_absorbance"
+  },
+  {
+    "input_type": "experimental",
+    "sample_id": "Fluorescein",
+    "source_path": "../../input/files/organic_uvvis_photochemcad_dataset.xlsx",
+    "series_name": "Fluorescein",
+    "sheet_name": "program_input_absorbance"
+  }
+]

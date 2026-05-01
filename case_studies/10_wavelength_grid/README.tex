@@ -1,0 +1,326 @@
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames*,x11names*}{xcolor}
+\documentclass[
+  11pt,
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp}
+\else
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath}
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{
+  \IfFileExists{parskip.sty}{
+    \usepackage{parskip}
+  }{
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{}
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={blue},
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same}
+\usepackage[margin=2cm]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+\newenvironment{Shaded}{}{}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc}
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em}
+\providecommand{\tightlist}{
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+\usepackage{fvextra}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,fontsize=\footnotesize,commandchars=\\\{\}}
+\RecustomVerbatimEnvironment{verbatim}{Verbatim}{breaklines,breakanywhere,fontsize=\footnotesize}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\setlist[itemize]{itemsep=2pt,parsep=2pt}
+\setlist[enumerate]{itemsep=2pt,parsep=2pt}
+\usepackage{etoolbox}
+\AtBeginEnvironment{longtable}{\footnotesize}
+\AtBeginEnvironment{tabular}{\footnotesize}
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{4pt}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\titleformat{\section}{\Large\bfseries}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{1.4em}{0.6em}
+\titlespacing*{\subsection}{0pt}{1.0em}{0.4em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em plus 0.1em minus 0.1em}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\nouppercase{\leftmark}}
+\fancyhead[R]{\thepage}
+\fancyfoot[C]{overlap-calculator case studies}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{14pt}
+\sloppy
+\ifLuaTeX
+  \usepackage{selnolig}
+\fi
+
+\title{Case Study 10 — Wavelength Grid}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{Working grid bounds and density}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+{
+\hypersetup{linkcolor=}
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\hypertarget{case-study-10--wavelength-grid}{
+\section{Case Study 10 --- Wavelength
+Grid}\label{case-study-10--wavelength-grid}}
+
+Widen the working wavelength grid from the default \texttt{200..800\ nm}
+with \texttt{10000} points to \texttt{250..1100\ nm} with \texttt{20000}
+points. Use a wider grid when your dyes absorb (or your light sources
+emit) outside the default window --- for instance NIR dyes, or solar
+spectra extending into the IR.
+
+The user-selectable knobs are:
+
+\begin{itemize}
+\tightlist
+\item
+  CLI: \texttt{-\/-wl-min\ FLOAT}, \texttt{-\/-wl-max\ FLOAT},
+  \texttt{-\/-num-points\ INT}
+\item
+  API: form fields \texttt{wl\_min}, \texttt{wl\_max},
+  \texttt{num\_points}
+\end{itemize}
+
+The grid is shared across all samples and all light sources in the same
+run.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{what-you-will-produce}{
+\subsection{What you will produce}\label{what-you-will-produce}}
+
+Everything is written under one \texttt{output/} directory inside this
+case study folder:
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule
+Folder & By & Contents \\
+\midrule
+\endhead
+\texttt{output/cli/tables/} & CLI & Result tables (CSV / JSON / XLSX) \\
+\texttt{output/cli/plots/} & CLI & TIFF plots per sample, light source,
+and (sample, light) pair \\
+\texttt{output/api/} & API & Same \texttt{tables/} and \texttt{plots/}
+tree, extracted from the ZIP \\
+\texttt{output/api/analysis\_outputs.zip} & API & Raw ZIP response \\
+\bottomrule
+\end{longtable}
+
+Light sources used: \textbf{AM1.5G + LED-B4}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{1-prerequisites}{
+\subsection{1. Prerequisites}\label{1-prerequisites}}
+
+If you have never run any case study before, follow
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/01_theoretical_only/README.md\#1-prerequisites}{Case
+Study 01 §1 Prerequisites} once to install the package, the
+\texttt{requests} library, and either the Python or Docker option for
+the HTTP API. Every case study uses the same environment.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{2-inputs}{
+\subsection{2. Inputs}\label{2-inputs}}
+
+The case-study \texttt{input.json} lists 2 Gaussian TD-DFT outputs. The
+manifest uses relative paths that point at the bundled data under
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/input/files}{\texttt{../../input/files/}},
+so no files are copied or duplicated. To swap in your own data, replace
+\texttt{input.json} with a manifest of the same shape; you do not need
+to touch \texttt{submit.py}.
+
+\hypertarget{3-run-with-the-cli}{
+\subsection{3. Run with the CLI}\label{3-run-with-the-cli}}
+
+Open a terminal at the repository root, then run a single command:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{overlap{-}calculator}\NormalTok{ analyze }\AttributeTok{{-}{-}input}\NormalTok{ case\_studies/10\_wavelength\_grid/input.json }\AttributeTok{{-}{-}out}\NormalTok{ case\_studies/10\_wavelength\_grid/output/cli }\AttributeTok{{-}{-}default{-}light{-}sources}\NormalTok{ AM15G,LEDB4 }\AttributeTok{{-}{-}wl{-}min}\NormalTok{ 250 }\AttributeTok{{-}{-}wl{-}max}\NormalTok{ 1100 }\AttributeTok{{-}{-}num{-}points}\NormalTok{ 20000 }\AttributeTok{{-}{-}plot{-}dpi}\NormalTok{ 400}
+\end{Highlighting}
+\end{Shaded}
+
+After the run, \texttt{case\_studies/10\_wavelength\_grid/output/cli/}
+contains a \texttt{tables/} directory (and a \texttt{plots/} directory
+unless plots were disabled). The \texttt{-\/-default-light-sources} flag
+pins the bundled sources to AM1.5G + LED-B4; remove it to compare
+against the full default set (\texttt{AM15G,LEDB4,LEDB2,LEDB3,CIEFL10}).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{4-run-with-the-http-api}{
+\subsection{4. Run with the HTTP API}\label{4-run-with-the-http-api}}
+
+Start the API as documented in
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/01_theoretical_only/README.md\#1-prerequisites}{Case
+Study 01 §1} and verify with
+\texttt{curl\ http://localhost:8000/health} (or \texttt{:8080} if you
+started the API via \texttt{docker\ compose}). Then submit the same
+uploads in one curl command:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{curl} \AttributeTok{{-}X}\NormalTok{ POST http://localhost:8000/analyze }\AttributeTok{{-}F} \StringTok{"files=@input/files/slurm{-}5473089.out"} \AttributeTok{{-}F} \StringTok{"files=@input/files/slurm{-}5473178.out"} \AttributeTok{{-}F} \StringTok{"default\_light\_sources=AM15G,LEDB4"} \AttributeTok{{-}F} \StringTok{"wl\_min=250"} \AttributeTok{{-}F} \StringTok{"wl\_max=1100"} \AttributeTok{{-}F} \StringTok{"num\_points=20000"} \AttributeTok{{-}F} \StringTok{"plot\_dpi=400"} \AttributeTok{{-}{-}output}\NormalTok{ case\_studies/10\_wavelength\_grid/output/api/analysis\_outputs.zip}
+\end{Highlighting}
+\end{Shaded}
+
+Each \texttt{-F\ "files=@..."} is one upload. The form fields mirror the
+CLI flags. The response is a ZIP archive saved as
+\texttt{output/api/analysis\_outputs.zip}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{5-drive-both-interfaces-from-one-python-script}{
+\subsection{5. Drive both interfaces from one Python
+script}\label{5-drive-both-interfaces-from-one-python-script}}
+
+Instead of typing the commands above, run
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/10_wavelength_grid/submit.py}{\texttt{submit.py}}
+from the repository root:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{python}\NormalTok{ case\_studies/10\_wavelength\_grid/submit.py}
+\end{Highlighting}
+\end{Shaded}
+
+The script reads \texttt{input.json}, runs the CLI step (writing to
+\texttt{output/cli/}), then POSTs the same uploads to \texttt{/analyze}
+and unpacks the response into \texttt{output/api/}. If the API is not
+reachable, it prints a hint and exits cleanly without failing the CLI
+step.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{6-expected-output-layout}{
+\subsection{6. Expected output layout}\label{6-expected-output-layout}}
+
+\begin{verbatim}
+case_studies/10_wavelength_grid/output/
++-- cli/
+|   +-- tables/results.{csv,json,xlsx}        (2 samples × 2 light sources = 4 rows (250..1100 nm, 20000 pts))
+|   +-- tables/results_timings.{csv,json,xlsx}
+|   +-- tables/descriptor_summary.{csv,xlsx}
+|   +-- tables/ranking_by_light_source__<metric>.{csv,json,xlsx}   (gaussian/lorentzian x absorbed_fraction/shape_overlap)
+|   +-- tables/ranking_by_sample__<metric>.{csv,json,xlsx}          (same four metric variants)
+|   +-- plots/                                                      (also plots/ranking/by_light_source/<metric>/ and plots/ranking/by_sample/<metric>/)
++-- api/
+    +-- analysis_outputs.zip
+    +-- tables/...
+    +-- plots/...
+\end{verbatim}
+
+API sample IDs are auto-generated from each upload's \texttt{\%chk}
+header, while the CLI uses the \texttt{sample\_id} you set in
+\texttt{input.json}. This is the only cosmetic difference between the
+two trees; the tables align row by row otherwise.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{7-related-case-studies}{
+\subsection{7. Related case studies}\label{7-related-case-studies}}
+
+\begin{itemize}
+\tightlist
+\item
+  \href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/08_broadening_sigma/README.md}{Case
+  Study 08 --- Broadening Sigma}
+\item
+  \href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/09_beer_lambert_tuning/README.md}{Case
+  Study 09 --- Beer--Lambert Tuning}
+\item
+  \href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/01_theoretical_only/README.md}{Case
+  Study 01 --- Theoretical Only}
+\end{itemize}
+
+\end{document}

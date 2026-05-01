@@ -1,0 +1,29 @@
+services:
+  api:
+    build: .
+    image: overlap-calculator:latest
+    container_name: overlap-calculator
+    restart: unless-stopped
+    ports:
+      - "8080:8000"
+    environment:
+      GAUSS_LOG_LEVEL: INFO
+      GAUSS_LOG_FORMAT: text
+      GAUSS_UPLOAD_MAX_MB: "50"
+      GAUSS_UPLOAD_ALLOWED_EXTS: '[".out", ".log", ".csv", ".xlsx", ".xls"]'
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - |
+          import sys, urllib.request
+          try:
+              with urllib.request.urlopen("http://localhost:8000/health", timeout=3) as resp:
+                  sys.exit(0 if resp.status == 200 else 1)
+          except Exception:
+              sys.exit(1)
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

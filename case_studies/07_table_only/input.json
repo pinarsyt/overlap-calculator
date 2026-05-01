@@ -1,0 +1,16 @@
+[
+  {
+    "input_type": "theoretical",
+    "sample_id": "3e_td",
+    "source_path": "../../input/files/slurm-2829207.out",
+    "series_name": null,
+    "sheet_name": null
+  },
+  {
+    "input_type": "theoretical",
+    "sample_id": "3f_td",
+    "source_path": "../../input/files/slurm-2829212.out",
+    "series_name": null,
+    "sheet_name": null
+  }
+]
