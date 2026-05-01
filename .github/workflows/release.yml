@@ -56,7 +56,7 @@ jobs:
             echo "Release ${GITHUB_REF_NAME} already exists; uploading artifacts only."
           else
             gh release create "${GITHUB_REF_NAME}" \
-              --title "${GITHUB_REF_NAME}" \
+              --title "Batch spectral-overlap analysis between TD-DFT / experimental absorption and reference light sources" \
               --generate-notes
           fi
           gh release upload "${GITHUB_REF_NAME}" dist/* --clobber
