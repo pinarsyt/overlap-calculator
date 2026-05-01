@@ -1,0 +1,423 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Overlap Calculator Documentation</title>
+    <style>
+      :root {
+        --bg: #0e1116;
+        --panel: #151a22;
+        --panel-2: #1a2130;
+        --text: #e8edf6;
+        --muted: #a9b4c4;
+        --border: #243046;
+        --code: #0b0f15;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "IBM Plex Sans", "Segoe UI", Tahoma, sans-serif;
+        background:
+          radial-gradient(1200px 700px at 10% -10%, #1b2a3a, transparent),
+          radial-gradient(1200px 900px at 90% 10%, #2b2233, transparent),
+          var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+      }
+      header { padding: 44px 24px 20px; text-align: center; }
+      header h1 { margin: 0 0 8px; font-size: 36px; }
+      header p { margin: 0 auto; max-width: 920px; color: var(--muted); }
+      .container { max-width: 1200px; margin: 0 auto; padding: 0 24px 64px; }
+      .grid { display: grid; grid-template-columns: 300px 1fr; gap: 22px; }
+      nav {
+        position: sticky; top: 16px; align-self: start;
+        background: var(--panel); border: 1px solid var(--border);
+        border-radius: 14px; padding: 16px; box-shadow: var(--shadow);
+      }
+      nav h2 { margin: 0 0 10px; font-size: 15px; color: var(--muted); text-transform: uppercase; }
+      nav a {
+        display: block; color: var(--text); text-decoration: none;
+        padding: 7px 10px; border-radius: 8px; margin-bottom: 4px;
+      }
+      nav a:hover { background: var(--panel-2); }
+      section {
+        background: var(--panel); border: 1px solid var(--border);
+        border-radius: 16px; padding: 22px; margin-bottom: 18px; box-shadow: var(--shadow);
+      }
+      section h2 { margin-top: 0; font-size: 24px; }
+      section h3 { margin-bottom: 6px; }
+      code, pre {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 13.5px;
+      }
+      pre {
+        background: var(--code); border: 1px solid var(--border);
+        padding: 14px; border-radius: 10px; overflow-x: auto;
+      }
+      ol, ul { margin-top: 8px; }
+      .cards {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;
+      }
+      .card {
+        background: var(--panel-2); border: 1px solid var(--border);
+        border-radius: 12px; padding: 14px;
+      }
+      .img-card img {
+        width: 100%;
+        height: auto;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+      footer { text-align: center; color: var(--muted); padding: 24px; font-size: 13px; }
+      @media (max-width: 980px) {
+        .grid { grid-template-columns: 1fr; }
+        nav { position: static; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Overlap Calculator Documentation</h1>
+      <p>
+        Step-by-step guide for mixed theoretical/experimental overlap analysis with
+        mandatory Gaussian/Lorentzian comparison and multi-light-source scoring.
+      </p>
+    </header>
+
+    <div class="container">
+      <div class="grid">
+        <nav>
+          <h2>Contents</h2>
+          <a href="#overview">Overview</a>
+          <a href="#step-conda">Step-by-Step (Conda)</a>
+          <a href="#step-venv">Step-by-Step (venv)</a>
+          <a href="#step-api">Step-by-Step (API)</a>
+          <a href="#step-docker">Step-by-Step (Docker API)</a>
+          <a href="#input-types">Input Types</a>
+          <a href="#sample-id">Sample IDs</a>
+          <a href="#cli">CLI Options</a>
+          <a href="#output">Output Checklist</a>
+          <a href="#units">Units</a>
+          <a href="#math">Physics</a>
+          <a href="#plots">Example Plots</a>
+          <a href="#troubleshooting">Troubleshooting</a>
+        </nav>
+
+        <main>
+          <section id="overview">
+            <h2>Overview</h2>
+            <p>
+              Two input families are treated as equal first-class citizens and can be mixed freely in the same run:
+            </p>
+            <ul>
+              <li><strong>Theoretical</strong> &mdash; Gaussian TD-DFT <code>.out</code> / <code>.log</code> files.</li>
+              <li><strong>Experimental</strong> &mdash; tabular spectra as <strong>CSV</strong> (<code>.csv</code>), <strong>Excel workbook</strong> (<code>.xlsx</code>), or <strong>legacy Excel</strong> (<code>.xls</code>), with multi-sheet and multi-series selection.</li>
+            </ul>
+            <ul>
+              <li>Always computes both broadening methods (<code>gaussian</code>, <code>lorentzian</code>).</li>
+              <li>Evaluates each sample against multiple light sources and exports ranked descriptors.</li>
+            </ul>
+          </section>
+
+          <section id="step-conda">
+            <h2>Step-by-Step (Conda)</h2>
+            <ol>
+              <li>Create environment and activate it.</li>
+            </ol>
+            <pre><code>conda env create -f environment.yml
+conda activate overlap-calculator</code></pre>
+            <ol start="2">
+              <li>Install the package.</li>
+            </ol>
+            <pre><code>pip install -e .</code></pre>
+            <ol start="3">
+              <li>Put your `.out` and/or `.csv/.xlsx/.xls` files into `input/files`.</li>
+              <li>Generate normalized input JSON.</li>
+            </ol>
+            <pre><code>overlap-calculator generate-input --files-dir input/files --out input/input.json</code></pre>
+            <ol start="5">
+              <li>Run analysis.</li>
+            </ol>
+            <pre><code>overlap-calculator analyze --input input/input.json --out output</code></pre>
+            <ol start="6">
+              <li>Inspect outputs under `output/tables` and `output/plots`.</li>
+            </ol>
+          </section>
+
+          <section id="step-venv">
+            <h2>Step-by-Step (venv)</h2>
+            <ol>
+              <li>Create and activate venv.</li>
+            </ol>
+            <pre><code>python -m venv .venv
+# Linux/macOS
+source .venv/bin/activate
+# Windows PowerShell
+.venv\Scripts\Activate.ps1
+# Windows CMD
+.venv\Scripts\activate.bat</code></pre>
+            <ol start="2">
+              <li>Install package, generate input, and analyze.</li>
+            </ol>
+            <pre><code>pip install -e .
+overlap-calculator generate-input --files-dir input/files --out input/input.json
+overlap-calculator analyze --input input/input.json --out output</code></pre>
+          </section>
+
+          <section id="step-api">
+            <h2>Step-by-Step (API)</h2>
+            <ol>
+              <li>Start API server.</li>
+            </ol>
+            <pre><code>python -m overlap_calculator.api.app</code></pre>
+            <ol start="2">
+              <li>Send multipart request with one or more `files` entries.</li>
+            </ol>
+            <pre><code>curl -X POST http://localhost:8000/analyze -F "files=@input/files/sample_td.out" -F "files=@input/files/experimental.xlsx" -F "plot_dpi=400" -F "ranking_outputs=true" --output analysis_outputs.zip</code></pre>
+            <ol start="3">
+              <li>Optionally pass <code>sigma_ev</code>, grid bounds, <code>concentration_m</code>, <code>path_cm</code>, <code>default_light_sources</code>, <code>light_source_files</code>, <code>plot_dpi</code>, and <code>ranking_outputs</code>.</li>
+              <li>For multi-sheet Excel uploads, pass <code>sheet_overrides</code> as a JSON object keyed by the original filename when you need to force a specific sheet:
+                <pre><code>-F 'sheet_overrides={"dye_panel.xlsx":"raw"}'</code></pre>
+              </li>
+              <li>Receive <code>analysis_outputs.zip</code>.</li>
+            </ol>
+          </section>
+
+          <section id="step-docker">
+            <h2>Step-by-Step (Docker API)</h2>
+            <p>
+              The Docker image listens on port <code>8000</code> <em>inside</em> the container. Both
+              <code>docker run</code> and <code>docker compose</code> publish it on host port
+              <strong>8080</strong>, so the native Flask instance (port <code>8000</code>) and the docker
+              instance (port <code>8080</code>) can run side by side.
+            </p>
+            <ol>
+              <li>Build image.</li>
+            </ol>
+            <pre><code>docker build -t overlap-calculator .</code></pre>
+            <ol start="2">
+              <li>Run container — host port <strong>8080</strong> mapped to the container's port <code>8000</code>.</li>
+            </ol>
+            <pre><code>docker run --name overlap-calculator -p 8080:8000 overlap-calculator
+curl http://localhost:8080/health</code></pre>
+            <ol start="3">
+              <li>Or use the bundled <code>docker-compose.yml</code> for restart policy + <code>/health</code> healthcheck — it uses the same <strong>8080</strong> host port:</li>
+            </ol>
+            <pre><code>docker compose up -d
+curl http://localhost:8080/health</code></pre>
+            <ol start="4">
+              <li>Send API requests against <code>http://localhost:8080/analyze</code> (same payload as the native API on <code>8000</code>).</li>
+            </ol>
+          </section>
+
+          <section id="input-types">
+            <h2>Input Types</h2>
+            <p>
+              A single <code>input/files/</code> directory can hold any mix of the
+              supported formats; <code>generate-input</code> auto-discovers each
+              of them and writes one unified manifest.
+            </p>
+
+            <h3>Theoretical (<code>.out</code> / <code>.log</code>)</h3>
+            <p>
+              Gaussian TD-DFT outputs. The TD route and <code>Excited State</code>
+              lines are parsed to reconstruct the absorption spectrum from
+              oscillator strengths.
+            </p>
+
+            <h3>Experimental &mdash; CSV (<code>.csv</code>)</h3>
+            <p>One wavelength column + one or more numeric signal columns.</p>
+            <pre><code>wavelength_nm,sample_A,sample_B
+300,0.12,0.08
+310,0.15,0.10
+320,0.18,0.14</code></pre>
+
+            <h3>Experimental &mdash; Excel (<code>.xlsx</code> / <code>.xls</code>)</h3>
+            <p>
+              The same column layout as the CSV form, stored as an Excel
+              workbook. The first row is the header; any numeric columns beside
+              the wavelength axis are treated as independent samples.
+              Multi-sheet workbooks are fully supported. <code>generate-input</code>
+              selects the first analyzable sheet automatically; use the
+              <code>sheet_name</code> field in a manifest entry to force a sheet
+              (in hand-written manifests, omit or <code>null</code> reads the first sheet):
+            </p>
+            <pre><code>{
+  "input_type": "experimental",
+  "sample_id": "channel_A",
+  "source_path": "files/dye_panel.xlsx",
+  "series_name": "channel_A",
+  "sheet_name": "raw"
+}</code></pre>
+            <p>
+              Accepted wavelength-column aliases (case-insensitive):
+              <code>wavelength</code>, <code>wavelength_nm</code>,
+              <code>lambda</code>, <code>wl</code>, <code>nm</code>. Each signal
+              column is interpreted as absorbance <code>A(&lambda;)</code>.
+            </p>
+          </section>
+
+          <section id="sample-id">
+            <h2>Sample IDs</h2>
+            <p>
+              The <code>sample_id</code> column in every results table and plot filename
+              is derived automatically by <code>generate-input</code>:
+            </p>
+            <ul>
+              <li>
+                <strong>Theoretical (<code>.out</code>)</strong> &mdash; if the Gaussian
+                route contains a <code>%chk=&lt;name&gt;.chk</code> line, the checkpoint
+                stem is used. This keeps the human-meaningful molecule label even when
+                the raw files are queue-system artefacts such as
+                <code>slurm-5473089.out</code>.
+                <pre><code>%chk=B1_td.chk    &rarr;  sample_id = "B1_td"</code></pre>
+                If no <code>%chk</code> line is present, the <code>.out</code> file stem
+                is used as a fallback.
+              </li>
+              <li>
+                <strong>Experimental</strong> &mdash; one manifest entry per numeric
+                series column, with
+                <code>sample_id = "&lt;series_name&gt;"</code> (the series column
+                name itself, so <code>Coumarin_1</code> rather than a long
+                file-stem prefix).
+              </li>
+            </ul>
+            <p>
+              If you author <code>input.json</code> by hand and leave <code>sample_id</code>
+              blank, the same resolution rule is applied at analysis time.
+            </p>
+          </section>
+
+          <section id="cli">
+            <h2>CLI Options</h2>
+            <pre><code>overlap-calculator analyze --input input/input.json --out output --sigma-ev 0.3 --wl-min 200 --wl-max 800 --num-points 10000 --concentration-m 1e-5 --path-cm 1.0 --default-light-sources AM15G,LEDB1,LEDB2,LEDB3,LEDB4,CIEFL10 --light-source-file input/custom_light_1.csv --plot-outputs --plot-dpi 400 --ranking-outputs</code></pre>
+            <p>Gaussian and Lorentzian broadenings are both computed every run and
+            appear side-by-side as <code>gaussian_*</code> / <code>lorentzian_*</code>
+            columns in <code>results.csv</code> with <code>delta_*</code> differences.</p>
+            <p>TIFF plots default to 400 dpi. Use <code>--plot-dpi 600</code>
+            when larger publication exports are needed.</p>
+            <p>Ranking outputs (<code>ranking_by_light_source__&lt;metric&gt;.*</code> and
+            <code>ranking_by_sample__&lt;metric&gt;.*</code>, plus matching bar charts under
+            <code>plots/ranking/</code>) are emitted by default for all four metric
+            variants &mdash; gaussian/lorentzian &times;
+            <code>absorbed_fraction</code>/<code>shape_overlap</code> &mdash;
+            so the choice of "intensity-weighted absorbed fraction" vs.
+            "intensity-independent shape overlap" can be made downstream.
+            Disable with <code>--no-ranking-outputs</code>.</p>
+          </section>
+
+          <section id="output">
+            <h2>Output Checklist</h2>
+            <ol>
+              <li>Open `output/tables/results.csv` for all raw rows.</li>
+              <li>Open `output/tables/descriptor_summary.csv` for the global flat ranking.</li>
+              <li>`results.csv` is wide format: one row per `(sample, light)` pair with `gaussian_*`, `lorentzian_*`, and `delta_*` columns side-by-side.</li>
+              <li>For grouped rankings, open the per-metric files
+                <code>output/tables/ranking_by_light_source__&lt;metric&gt;.{csv,json,xlsx}</code>
+                (samples ordered within each light source) and
+                <code>output/tables/ranking_by_sample__&lt;metric&gt;.{csv,json,xlsx}</code>
+                (light sources ordered within each sample), where
+                <code>&lt;metric&gt;</code> is one of
+                <code>gaussian_absorbed_fraction</code>,
+                <code>lorentzian_absorbed_fraction</code>,
+                <code>gaussian_shape_overlap</code>,
+                <code>lorentzian_shape_overlap</code>.
+              </li>
+              <li>If available, inspect `output/tables/skipped_inputs.csv`.</li>
+              <li>Inspect TIFF plots under `output/plots/*`:
+                <ul>
+                  <li><code>absorption/&lt;sample&gt;__absolute.tiff</code> and <code>..__normalized.tiff</code> — Gaussian + Lorentzian α(λ) together.</li>
+                  <li><code>light_source/&lt;light&gt;.tiff</code> — per light source spectrum.</li>
+                  <li><code>overlap/&lt;sample&gt;__&lt;light&gt;__combined__absolute.tiff</code> and <code>..__combined__normalized.tiff</code> — both broadenings together.</li>
+                  <li><code>overlap/&lt;sample&gt;__&lt;light&gt;__gaussian__{absolute,normalized}.tiff</code> and the same for <code>lorentzian</code> — one TIFF per broadening.</li>
+                  <li><code>overlays/absorptance_overlay__&lt;method&gt;__{absolute,normalized}.tiff</code> — multi-sample overlays.</li>
+                  <li><code>ranking/by_light_source/&lt;metric&gt;/&lt;light&gt;.tiff</code> — bar chart ranking samples for each light source.</li>
+                  <li><code>ranking/by_sample/&lt;metric&gt;/&lt;sample&gt;.tiff</code> — bar chart ranking light sources for each sample.</li>
+                </ul>
+              </li>
+              <li>Every overlap TIFF shades the geometric overlap area <code>min(α, Î)</code> (the integrand of <code>shape_overlap</code> in the normalised panel), so the figure and the reported numerical metric are visually identical.</li>
+              <li>Ranking bar charts annotate each bar with its numerical metric value and embed the metric name in the y-axis label, so the figure is self-describing.</li>
+              <li>Legends are placed below the axes on all plots.</li>
+              <li>Plots are 400 dpi by default; CLI <code>--plot-dpi</code>
+                and API <code>plot_dpi</code> override the TIFF resolution.</li>
+              <li>To skip the ranking outputs (tables and bar charts) entirely, pass <code>--no-ranking-outputs</code> on the CLI or <code>ranking_outputs=false</code> on the API.</li>
+            </ol>
+            <p>Important columns in <code>results.*</code>:</p>
+            <ul>
+              <li><code>molar_absorptivity_max</code> (peak <code>epsilon</code> in <code>M^-1 cm^-1</code>, theoretical rows only)</li>
+              <li><code>absorptance_max</code> (peak Beer-Lambert absorptance at the reference <code>c*L</code>)</li>
+              <li><code>absorbed_flux</code> (integrated absorbed intensity)</li>
+              <li><code>absorbed_fraction</code> (dimensionless fraction of incident flux that is absorbed)</li>
+              <li><code>shape_overlap</code> (dimensionless spectral-shape comparator)</li>
+              <li><code>reference_concentration_molar</code>, <code>reference_path_cm</code> (Beer-Lambert reference)</li>
+              <li><code>absorption_unit</code>, <code>light_source_unit</code>, <code>absorbed_flux_unit</code></li>
+            </ul>
+          </section>
+
+          <section id="units">
+            <h2>Units</h2>
+            <ul>
+              <li>Theoretical absorption is stored as Beer-Lambert <code>absorptance</code> (dimensionless, in <code>[0, 1]</code>) derived from <code>epsilon(lambda)</code> in <code>M^-1 cm^-1</code> at the reference <code>c*L</code>.</li>
+              <li>Experimental absorption is treated as user-provided absorbance and converted to absorptance the same way (no Beer-Lambert reference used).</li>
+              <li><code>AM15G</code> is treated as <code>W m^-2 nm^-1</code>.</li>
+              <li><code>LEDB*</code> and <code>CIEFL10</code> are treated as relative spectra.</li>
+              <li><code>absorbed_flux_unit</code> is <code>W m^-2</code> for AM15G, or <code>relative_integral</code> for relative sources.</li>
+            </ul>
+          </section>
+
+          <section id="math">
+            <h2>Physics</h2>
+            <p>Extinction spectrum from TD-DFT oscillator strengths:</p>
+            <ul>
+              <li><code>nu_i [cm^-1] = 1e7 / lambda_i[nm]</code></li>
+              <li><code>sigma [cm^-1] = sigma_ev * 8065.544</code></li>
+              <li>Gaussian: <code>g_i(nu) = exp(-(nu - nu_i)^2 / (2 sigma^2)) / (sigma sqrt(2 pi))</code></li>
+              <li>Lorentzian: <code>l_i(nu) = (sigma / pi) / ((nu - nu_i)^2 + sigma^2)</code></li>
+              <li><code>epsilon(lambda) [M^-1 cm^-1] = 2.315e8 * sum_i f_i * profile_i(nu(lambda))</code></li>
+            </ul>
+            <p>Beer-Lambert absorptance:</p>
+            <ul>
+              <li><code>A(lambda) = epsilon(lambda) * c * L</code></li>
+              <li><code>alpha(lambda) = 1 - 10^(-A(lambda))</code></li>
+            </ul>
+            <p>Light-overlap metrics:</p>
+            <ul>
+              <li><code>absorbed_flux = integral alpha(lambda) * I(lambda) d lambda</code></li>
+              <li><code>light_flux_total = integral I(lambda) d lambda</code></li>
+              <li><code>absorbed_fraction = absorbed_flux / light_flux_total</code></li>
+              <li><code>shape_overlap = integral alpha_norm(lambda) * I_norm(lambda) d lambda / integral I_norm(lambda) d lambda</code></li>
+            </ul>
+          </section>
+
+          <section id="plots">
+            <h2>Example Plots</h2>
+            <div class="cards">
+              <div class="card img-card">
+                <h3>Absorption Overlay</h3>
+                <img src="absorption_overlay_example.svg" alt="Absorption overlay example" />
+              </div>
+              <div class="card img-card">
+                <h3>Molecule-Light Overlap</h3>
+                <img src="overlap_example.svg" alt="Overlap example" />
+              </div>
+            </div>
+          </section>
+
+          <section id="troubleshooting">
+            <h2>Troubleshooting</h2>
+            <ol>
+              <li>No output files: inspect `output/tables/skipped_inputs.*` and logs.</li>
+              <li>CLI mismatch: run `pip install -e .` in the active environment.</li>
+              <li>Plot export is too large: retry with a lower <code>--plot-dpi</code> value or use <code>--no-plot-outputs</code> for table-only runs.</li>
+              <li>Environment conflicts: use only one environment at a time (Conda or venv).</li>
+            </ol>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <footer>Overlap Calculator Documentation</footer>
+  </body>
+</html>

@@ -1,0 +1,107 @@
+{
+  "info": {
+    "name": "Overlap Calculator API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Two deployment flavours are provided, split cleanly by transport:\n\n- `Native API (Flask) — port 8000` targets the Flask app started directly on the host with `python -m overlap_calculator.api.app`. No container is involved.\n- `Docker (run or compose) — port 8080` targets the containerised API. Both `docker run -p 8080:8000 overlap-calculator` and `docker compose up` publish the container's internal port 8000 on host port 8080, so the two flavours can run side by side.\n\nPOST /analyze returns analysis_outputs.zip with result tables and plots. Optional form fields are disabled by default; enable them to override server defaults."
+  },
+  "item": [
+    {
+      "name": "Native API (Flask) — port 8000",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8000/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Analyze (Bulk files)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "http://localhost:8000/analyze",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["analyze"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key": "files", "type": "file", "src": ["input/sample1.out", "input/sample2.out"]},
+                {"key": "sigma_ev", "type": "text", "value": "0.3", "disabled": true, "description": "Broadening std dev in eV (0.1-0.4 typical)"},
+                {"key": "wl_min", "type": "text", "value": "200", "disabled": true},
+                {"key": "wl_max", "type": "text", "value": "800", "disabled": true},
+                {"key": "num_points", "type": "text", "value": "10000", "disabled": true},
+                {"key": "concentration_m", "type": "text", "value": "1e-5", "disabled": true, "description": "Beer-Lambert reference concentration (mol/L)"},
+                {"key": "path_cm", "type": "text", "value": "1.0", "disabled": true, "description": "Beer-Lambert reference path length (cm)"},
+                {"key": "plot_outputs", "type": "text", "value": "true", "disabled": true},
+                {"key": "plot_dpi", "type": "text", "value": "400", "disabled": true, "description": "TIFF plot resolution in DPI; use 600 for publication-quality figures when output size is acceptable"},
+                {"key": "ranking_outputs", "type": "text", "value": "true", "disabled": true, "description": "Emit grouped ranking tables and bar charts for both absorbed_fraction and shape_overlap, in Gaussian and Lorentzian variants. Set to false to suppress."},
+                {"key": "default_light_sources", "type": "text", "value": "AM15G,LEDB4,LEDB2,LEDB3,CIEFL10", "disabled": true},
+                {"key": "light_source_files", "type": "file", "src": ["input/custom_light_1.csv"], "disabled": true, "description": "Repeat this entry to upload multiple custom light source CSV files"},
+                {"key": "sheet_overrides", "type": "text", "value": "{\"dye_panel.xlsx\":\"raw\"}", "disabled": true, "description": "Optional JSON object mapping uploaded filename to sheet name; forces a specific sheet for .xlsx/.xls workbooks. Files not listed use sheet auto-discovery."}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Docker (run or compose) — port 8080",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8080/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Analyze (Bulk files)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "http://localhost:8080/analyze",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["analyze"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key": "files", "type": "file", "src": ["input/sample1.out", "input/sample2.out"]},
+                {"key": "sigma_ev", "type": "text", "value": "0.3", "disabled": true, "description": "Broadening std dev in eV (0.1-0.4 typical)"},
+                {"key": "wl_min", "type": "text", "value": "200", "disabled": true},
+                {"key": "wl_max", "type": "text", "value": "800", "disabled": true},
+                {"key": "num_points", "type": "text", "value": "10000", "disabled": true},
+                {"key": "concentration_m", "type": "text", "value": "1e-5", "disabled": true, "description": "Beer-Lambert reference concentration (mol/L)"},
+                {"key": "path_cm", "type": "text", "value": "1.0", "disabled": true, "description": "Beer-Lambert reference path length (cm)"},
+                {"key": "plot_outputs", "type": "text", "value": "true", "disabled": true},
+                {"key": "plot_dpi", "type": "text", "value": "400", "disabled": true, "description": "TIFF plot resolution in DPI; use 600 for publication-quality figures when output size is acceptable"},
+                {"key": "ranking_outputs", "type": "text", "value": "true", "disabled": true, "description": "Emit grouped ranking tables and bar charts for both absorbed_fraction and shape_overlap, in Gaussian and Lorentzian variants. Set to false to suppress."},
+                {"key": "default_light_sources", "type": "text", "value": "AM15G,LEDB4,LEDB2,LEDB3,CIEFL10", "disabled": true},
+                {"key": "light_source_files", "type": "file", "src": ["input/custom_light_1.csv"], "disabled": true, "description": "Repeat this entry to upload multiple custom light source CSV files"},
+                {"key": "sheet_overrides", "type": "text", "value": "{\"dye_panel.xlsx\":\"raw\"}", "disabled": true, "description": "Optional JSON object mapping uploaded filename to sheet name; forces a specific sheet for .xlsx/.xls workbooks. Files not listed use sheet auto-discovery."}
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

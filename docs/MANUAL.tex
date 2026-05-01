@@ -1,0 +1,1107 @@
+\documentclass[11pt,a4paper]{article}
+
+% --------------------------------------------------------------------
+%  overlap-calculator User Manual --- LaTeX source
+%  Mirrors docs/MANUAL.md.  Compile with:
+%      pdflatex MANUAL.tex
+%      pdflatex MANUAL.tex      % second pass for TOC / refs
+% --------------------------------------------------------------------
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{seqsplit}
+\usepackage{ragged2e}
+\usepackage{fancyhdr}
+\setlength{\headheight}{26pt}
+\addtolength{\topmargin}{-12pt}
+\usepackage{titlesec}
+\usepackage[bookmarks=true,bookmarksopen=true,colorlinks=true,
+            linkcolor=Teal,citecolor=Teal,urlcolor=Teal]{hyperref}
+
+% -----------------------------  colours  ----------------------------
+\definecolor{Teal}{RGB}{0,102,102}
+\definecolor{CodeBg}{RGB}{245,245,245}
+\definecolor{CodeKeyword}{RGB}{0,60,120}
+\definecolor{CodeString}{RGB}{120,40,20}
+\definecolor{CodeComment}{RGB}{100,100,100}
+\definecolor{RuleGrey}{RGB}{180,180,180}
+
+% Helper macro: typewriter identifier with soft-break points between every
+% character, so long names like GAUSS_REFERENCE_CONCENTRATION_MOLAR can wrap
+% inside narrow longtable columns without overflowing.
+\newcommand{\idtt}[1]{\texttt{\seqsplit{#1}}}
+
+% -----------------------------  listings  ---------------------------
+\lstdefinelanguage{jsonish}{
+  morestring=[b]",
+  morecomment=[l]{//},
+  sensitive=true,
+}
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{CodeBg},
+  frame=single,
+  framerule=0pt,
+  rulecolor=\color{CodeBg},
+  framesep=8pt,
+  framexleftmargin=8pt,
+  framexrightmargin=8pt,
+  xleftmargin=8pt,
+  xrightmargin=8pt,
+  linewidth=\linewidth,
+  aboveskip=8pt,
+  belowskip=8pt,
+  breaklines=true,
+  breakatwhitespace=false,
+  breakindent=0pt,
+  postbreak=\mbox{\textcolor{gray}{$\hookrightarrow$}\space},
+  columns=fullflexible,
+  keepspaces=true,
+  keywordstyle=\color{CodeKeyword}\bfseries,
+  stringstyle=\color{CodeString},
+  commentstyle=\color{CodeComment}\itshape,
+  showstringspaces=false,
+  tabsize=2,
+  upquote=true,
+}
+
+% -----------------------------  headings  ---------------------------
+\titleformat{\section}{\Large\bfseries\color{Teal}}{\thesection}{0.75em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\itshape}{\thesubsubsection}{0.5em}{}
+
+% -----------------------------  page style  -------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small overlap-calculator \textemdash{} User Manual}
+\fancyhead[R]{\small \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{RuleGrey}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlist[itemize]{leftmargin=1.2em,itemsep=2pt,topsep=2pt}
+\setlist[enumerate]{leftmargin=1.4em,itemsep=2pt,topsep=2pt}
+
+% -----------------------------  metadata  ---------------------------
+\title{\vspace{-1.5cm}%
+  \Huge\bfseries overlap-calculator\\[4pt]
+  \Large\mdseries User Manual}
+\author{Pınar Seyitdanlıoğlu}
+\date{Version 1.0.0 \quad\textbullet\quad 2026-05-01}
+
+% ====================================================================
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\vspace{1em}
+\noindent\textbf{overlap-calculator} is a Python package for
+reproducible batch analysis of the spectral overlap between a molecular
+absorption spectrum and a reference light source. It treats two input
+families as equal first-class citizens in the same run:
+
+\begin{itemize}
+  \item \textbf{Theoretical} --- Gaussian TD-DFT
+        \texttt{.out}\,/\,\texttt{.log} files.
+  \item \textbf{Experimental} --- tabular spectra as \textbf{CSV}
+        (\texttt{.csv}), \textbf{Excel workbook} (\texttt{.xlsx}), or
+        \textbf{legacy Excel} (\texttt{.xls}), with multi-sheet and
+        multi-series selection.
+\end{itemize}
+
+\noindent Every TD-DFT spectrum is broadened with both Gaussian and
+Lorentzian line shapes, and the tool reports per-light-source
+absorbed-flux, absorbed-fraction, and shape-overlap metrics together
+with publication-grade TIFF plots.
+
+\vspace{0.5em}
+\noindent This manual covers installation, the CLI, the HTTP API, the
+input and output schemas, the physical assumptions and exact formulas,
+and environment configuration. For worked examples on real data, see
+the \texttt{case\_studies/} directory of the repository.
+
+\vspace{1.5em}
+\hrule
+\vspace{0.5em}
+\begin{flushleft}
+{\small Project home: \url{https://github.com/pinarsyt/overlap-calculator} \\
+Archived release (all versions): \url{https://doi.org/10.5281/zenodo.19944515} \\
+Licensed under the GNU General Public License v3.0 or later.}
+\end{flushleft}
+\vspace{0.5em}
+\hrule
+
+\clearpage
+\tableofcontents
+\clearpage
+
+% ====================================================================
+\section{Overview and Workflow}
+
+\begin{lstlisting}
+ Gaussian TD-DFT (.out)  -->  excited states (E, lambda, f)
+                                    |
+                                    v                    +--- Gaussian broadening ---+
+ Experimental (.csv/.xlsx) -->  A(lambda) --> eps, alpha  |                            |
+                                    |                    +--- Lorentzian broadening --+
+                                    v
+                        x each reference light source
+                                    |
+                                    v
+           absorbed_flux, absorbed_fraction, shape_overlap
+                                    |
+                                    v
+         results.{csv,json,xlsx}, descriptor_summary.*, skipped_inputs.*,
+         absorption / light_source / overlap / overlays TIFF plots
+\end{lstlisting}
+
+\noindent Pipeline stages:
+\begin{enumerate}
+  \item \textbf{Input resolution} --- A JSON manifest can be supplied
+        directly or auto-generated from a directory of raw files.
+        Experimental inputs expand to one row per numeric series column.
+  \item \textbf{Parsing} --- Regex-based TD-DFT parser for \texttt{.out}
+        files; pandas-based wavelength / signal loader for tabular
+        spectra.
+  \item \textbf{Spectrum reconstruction} --- Molar extinction
+        \(\varepsilon(\lambda)\) from TD-DFT states via
+        oscillator-strength weighting on a shared wavelength grid;
+        experimental signals are treated as absorbance directly.
+  \item \textbf{Beer--Lambert} ---
+        \(\alpha(\lambda) = 1 - 10^{-A(\lambda)}\) with configurable
+        reference concentration and path length.
+  \item \textbf{Overlap metrics} --- Per
+        \((\text{sample, light source, broadening})\) triplet.
+  \item \textbf{Export} --- Tabular (CSV / JSON / XLSX), descriptor
+        summary, skip report, and TIFF plots.
+\end{enumerate}
+
+% ====================================================================
+\section{Installation}
+
+\subsection*{Requirements}
+\begin{itemize}
+  \item Python \textbf{3.12.x}
+  \item Optional: Conda (recommended) or Docker
+\end{itemize}
+
+\subsection*{Conda (recommended)}
+\begin{lstlisting}[language=bash]
+conda env create -f environment.yml
+conda activate overlap-calculator
+pip install -e .
+\end{lstlisting}
+
+\subsection*{venv / pip}
+\begin{lstlisting}[language=bash]
+python -m venv .venv
+source .venv/bin/activate          # Linux / macOS
+# Windows PowerShell: .venv\Scripts\Activate.ps1
+# Windows CMD:        .venv\Scripts\activate.bat
+pip install -e .
+\end{lstlisting}
+
+\subsection*{Docker}
+The Docker image exposes the Flask API on port \texttt{8000}
+\emph{inside} the container. To keep it from clashing with a native
+Flask instance on the host (which uses port \texttt{8000} directly),
+publish it on host port \texttt{8080}:
+\begin{lstlisting}[language=bash]
+docker build -t overlap-calculator .
+docker run --rm -p 8080:8000 overlap-calculator
+curl http://localhost:8080/health
+\end{lstlisting}
+
+\subsection*{Docker Compose}
+For a managed runtime (restart policy, healthcheck, pre-populated
+\texttt{GAUSS\_*} environment), use the bundled compose file. It
+uses the same \textbf{host port \texttt{8080}} mapping as
+\texttt{docker run} above, so the native instance on \texttt{8000}
+and either docker variant on \texttt{8080} can run side by side:
+
+\begin{lstlisting}[language=bash]
+docker compose up -d            # starts the `overlap-calculator` service
+curl http://localhost:8080/health
+docker compose down
+\end{lstlisting}
+
+\noindent The compose service uses a Python-stdlib healthcheck
+against \texttt{/health} and restarts unless explicitly stopped. All
+runtime settings in \S\ref{sec:config} can be overridden via the
+\texttt{environment:} block or an adjacent \texttt{.env} file.
+
+\subsection*{Verify the install}
+\begin{lstlisting}[language=bash]
+overlap-calculator version
+overlap-calculator --help
+\end{lstlisting}
+
+% ====================================================================
+\section{Quick Start}
+
+Drop any combination of the supported input files into
+\texttt{input/files/} --- TD-DFT outputs, CSV spectra, and Excel
+workbooks can live side by side in the same directory:
+
+\begin{lstlisting}
+input/files/
+|-- slurm-5473089.out        # Gaussian TD-DFT output (theoretical)
+|-- dye_panel.xlsx           # Excel workbook, one or more sheets (experimental)
+`-- uv_vis_run3.csv          # CSV spectrum (experimental)
+\end{lstlisting}
+
+\noindent Then run the two-step pipeline:
+
+\begin{lstlisting}[language=bash]
+overlap-calculator generate-input --files-dir input/files --out input/input.json
+overlap-calculator analyze --input input/input.json --out output
+\end{lstlisting}
+
+Results land under \texttt{output/tables/} and \texttt{output/plots/}
+(see \S\ref{sec:outputs}).
+
+% ====================================================================
+\section{Command-Line Interface}
+\label{sec:cli}
+
+The package installs a single entry point, \texttt{overlap-calculator},
+with three subcommands.
+
+\subsection{\texttt{generate-input}}
+
+\begin{lstlisting}[language=bash]
+overlap-calculator generate-input --files-dir PATH [--out PATH] [--log-level LEVEL] [--log-format FORMAT]
+\end{lstlisting}
+
+\begin{longtable}{@{}p{3.4cm}p{3.6cm}p{8.6cm}@{}}
+\toprule
+\textbf{Flag} & \textbf{Default} & \textbf{Description} \\
+\midrule
+\endhead
+\texttt{-{}-files-dir}  & \texttt{input/files}      & Directory containing TD-DFT and experimental files \\
+\texttt{-{}-out}        & \texttt{input/input.json} & Output manifest path \\
+\texttt{-{}-log-level}  & \texttt{INFO}             & \texttt{DEBUG}, \texttt{INFO}, \texttt{WARNING}, \texttt{ERROR}, \texttt{CRITICAL} \\
+\texttt{-{}-log-format} & \texttt{text}             & \texttt{text} or \texttt{json} \\
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{analyze}}
+
+\begin{lstlisting}[language=bash]
+overlap-calculator analyze --input PATH [--out PATH] [--sigma-ev FLOAT] [--wl-min FLOAT] [--wl-max FLOAT] [--num-points INT] [--concentration-m FLOAT] [--path-cm FLOAT] [--default-light-sources STR] [--light-source-file PATH]... [--plot-outputs / --no-plot-outputs] [--plot-dpi INT] [--ranking-outputs / --no-ranking-outputs] [--log-level LEVEL] [--log-format FORMAT]
+\end{lstlisting}
+
+\begin{longtable}{@{}>{\RaggedRight}p{5.0cm}>{\RaggedRight}p{3.8cm}>{\RaggedRight}p{6.8cm}@{}}
+\toprule
+\textbf{Flag} & \textbf{Default} & \textbf{Description} \\
+\midrule
+\endhead
+\idtt{-{}-input}                 & \texttt{input/input.json}         & Manifest JSON (see \S\ref{sec:input}) \\
+\idtt{-{}-out}                   & \texttt{output}                   & Output directory (created if absent) \\
+\idtt{-{}-sigma-ev}              & \(0.30\)                          & Broadening standard deviation, eV \\
+\idtt{-{}-wl-min}                & \(200.0\)                         & Lower bound of the wavelength grid, nm \\
+\idtt{-{}-wl-max}                & \(800.0\)                         & Upper bound of the wavelength grid, nm \\
+\idtt{-{}-num-points}            & \(10000\)                         & Number of grid points \\
+\idtt{-{}-concentration-m}       & \(1\text{e-}5\)                   & Beer--Lambert reference concentration, mol\,L\(^{-1}\) \\
+\idtt{-{}-path-cm}               & \(1.0\)                           & Beer--Lambert reference path length, cm \\
+\idtt{-{}-default-light-sources} & \texttt{AM15G,LEDB4,\ldots}       & Comma-separated bundled-source list \\
+\idtt{-{}-light-source-file}     & \emph{none}                       & Repeatable path to a custom light-source CSV \\
+\idtt{-{}-plot-outputs}          & on                                & Emit TIFF plots (\idtt{-{}-no-plot-outputs} to disable) \\
+\idtt{-{}-plot-dpi}              & \(400\)                           & TIFF plot resolution; use \(600\) for larger publication exports \\
+\idtt{-{}-ranking-outputs}       & on                                & Emit grouped ranking tables and bar charts (gaussian/lorentzian \(\times\) \texttt{absorbed\_fraction} / \texttt{shape\_overlap}); disable with \idtt{-{}-no-ranking-outputs} \\
+\idtt{-{}-log-level}             & \texttt{INFO}                     & Logging verbosity \\
+\idtt{-{}-log-format}            & \texttt{text}                     & \texttt{text} or \texttt{json} \\
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{version}}
+Prints the installed package version.
+
+\begin{lstlisting}[language=bash]
+overlap-calculator version
+\end{lstlisting}
+
+% ====================================================================
+\section{HTTP API}
+\label{sec:api}
+
+\noindent The examples in this section use port \texttt{8000}, which
+is the \textbf{native Flask} port (started with \texttt{python -m
+overlap\_calculator.api.app}). If you run the same API under
+\textbf{Docker} (either \texttt{docker run -p 8080:8000} or
+\texttt{docker compose up}), use port \texttt{8080} instead --- the
+request bodies are otherwise identical.
+
+\subsection{Endpoints}
+
+\begin{longtable}{@{}p{1.8cm}p{2.8cm}p{10.6cm}@{}}
+\toprule
+\textbf{Method} & \textbf{Path} & \textbf{Purpose} \\
+\midrule
+\endhead
+GET  & \texttt{/health}  & Liveness probe \textemdash{} returns \texttt{\{"status":"ok"\}} \\
+POST & \texttt{/analyze} & Multipart upload; returns a ZIP of results \\
+\bottomrule
+\end{longtable}
+
+\noindent \texttt{POST /analyze} accepts the following form fields:
+
+\begin{longtable}{@{}>{\RaggedRight}p{5.0cm}>{\RaggedRight}p{3.0cm}>{\RaggedRight}p{7.6cm}@{}}
+\toprule
+\textbf{Form field} & \textbf{Type} & \textbf{Description} \\
+\midrule
+\endhead
+\idtt{files}                  & \texttt{file[]} (req.) & Mixed \texttt{.out}/\texttt{.csv}/\texttt{.xlsx}/\texttt{.xls} inputs \\
+\idtt{light\_source\_files}   & \texttt{file[]} (opt.) & Custom light-source CSVs \\
+\idtt{light\_source\_csv}     & \texttt{file} (opt.)   & Back-compat alias for a single custom CSV \\
+\idtt{sigma\_ev}              & float (opt.)           & Broadening \(\sigma\), eV (default \(0.30\)) \\
+\idtt{wl\_min}, \idtt{wl\_max} & float (opt.)        & Wavelength window bounds, nm \\
+\idtt{num\_points}            & int (opt.)             & Grid size (default \(10000\)) \\
+\idtt{concentration\_m}       & float (opt.)           & Beer--Lambert reference concentration (default \(1\text{e-}5\)) \\
+\idtt{path\_cm}               & float (opt.)           & Beer--Lambert reference path length (default \(1.0\)) \\
+\idtt{default\_light\_sources}& str (opt.)             & Comma-separated bundled-source list \\
+\idtt{plot\_outputs}          & bool (opt.)            & Enable / disable plot generation \\
+\idtt{plot\_dpi}              & int (opt.)             & TIFF plot resolution (default \(400\); use \(600\) for larger exports) \\
+\idtt{ranking\_outputs}       & bool (opt.)            & Enable / disable grouped ranking tables and bar charts (default \texttt{true}) \\
+\idtt{sheet\_overrides}       & str (opt.)             & JSON object \idtt{\{"<original-filename>":"<sheet-name>"\}} forcing a specific sheet for uploaded \texttt{.xlsx}/\texttt{.xls} workbooks \\
+\bottomrule
+\end{longtable}
+
+\noindent Response: \texttt{application/zip} containing every file
+\texttt{overlap-calculator analyze} would have written. Uploads are
+processed in a per-request workspace and are not persisted on the
+server.
+
+\subsection{Example}
+\begin{lstlisting}[language=bash]
+curl -X POST http://localhost:8000/analyze \
+  -F "files=@input/files/theoretical.out" \
+  -F "files=@input/files/experimental.xlsx" \
+  -F "sigma_ev=0.25" \
+  -F "plot_dpi=400" \
+  -F "ranking_outputs=true" \
+  -F "default_light_sources=AM15G,LEDB4" \
+  --output analysis_outputs.zip
+\end{lstlisting}
+
+\noindent To force a specific sheet in a multi-sheet workbook, add
+a \idtt{sheet\_overrides} form field whose value is a JSON object keyed
+by the original filename:
+
+\begin{lstlisting}[language=bash]
+curl -X POST http://localhost:8000/analyze \
+  -F "files=@input/files/dye_panel.xlsx" \
+  -F 'sheet_overrides={"dye_panel.xlsx":"raw"}' \
+  --output analysis_outputs.zip
+\end{lstlisting}
+
+\noindent Filenames that do not appear in the map use the same
+auto-discovery as \texttt{generate-input}: the first sheet with a
+wavelength column and at least one numeric signal column is selected.
+
+A Postman collection is provided at
+\texttt{docs/postman\_collection.json}.
+
+% ====================================================================
+\section{Input Format}
+\label{sec:input}
+
+\subsection{Accepted input files}
+
+\texttt{overlap-calculator} accepts two input families in the same run.
+Both are first-class: a single manifest can mix them freely, and the
+pipeline produces identical downstream columns, plots, and overlap
+metrics.
+
+\begin{longtable}{@{}>{\RaggedRight}p{2.6cm}>{\RaggedRight}p{2.8cm}>{\RaggedRight}p{4.2cm}>{\RaggedRight}p{5.4cm}@{}}
+\toprule
+\textbf{Family} & \textbf{Extensions} & \textbf{Parser} & \textbf{Notes} \\
+\midrule
+\endhead
+Theoretical  & \texttt{.out}, \texttt{.log}           & Regex-based Gaussian TD-DFT parser                     & File must contain a TD route and \texttt{Excited State} lines \\
+Experimental & \texttt{.csv}                          & \texttt{pandas.read\_csv}                              & One wavelength column and one or more numeric signal columns \\
+Experimental & \texttt{.xlsx}, \texttt{.xls}          & \texttt{pandas.read\_excel} (\texttt{openpyxl}/\texttt{xlrd}) & Multi-sheet workbooks supported via \texttt{sheet\_name}; \texttt{generate-input} auto-selects the first analyzable sheet \\
+\bottomrule
+\end{longtable}
+
+\noindent Bulk uploads via the HTTP API share the same matrix (see
+\idtt{GAUSS\_UPLOAD\_ALLOWED\_EXTS} in \S\ref{sec:config}).
+
+\subsection{Manifest (\texttt{input.json})}
+
+\begin{lstlisting}[language=jsonish]
+[
+  {
+    "input_type": "theoretical",
+    "sample_id": "B1",
+    "source_path": "files/slurm-5473089.out",
+    "series_name": null,
+    "sheet_name": null
+  },
+  {
+    "input_type": "experimental",
+    "sample_id": "channel_A",
+    "source_path": "files/dye_panel.xlsx",
+    "series_name": "channel_A",
+    "sheet_name": "raw"
+  }
+]
+\end{lstlisting}
+
+\begin{longtable}{@{}p{2.8cm}p{1.6cm}p{11cm}@{}}
+\toprule
+\textbf{Field} & \textbf{Req?} & \textbf{Description} \\
+\midrule
+\endhead
+\texttt{input\_type}   & yes   & \texttt{"theoretical"} (TD-DFT \texttt{.out}) or \texttt{"experimental"} (tabular spectrum) \\
+\texttt{sample\_id}    & yes   & Unique sample identifier; used in filenames and result rows \\
+\texttt{source\_path}  & yes   & Path to the raw file; resolved relative to the manifest, then to the CWD \\
+\texttt{series\_name}  & exp.  & Column name of the numeric series in a tabular file \\
+\texttt{sheet\_name}   & exp.  & Sheet name for \texttt{.xlsx}/\texttt{.xls} inputs; in hand-written manifests, omit or \texttt{null} to read the first workbook sheet \\
+\bottomrule
+\end{longtable}
+
+\noindent \texttt{generate-input} fills these automatically. The
+\texttt{sample\_id} is derived as follows:
+
+\begin{itemize}
+  \item \textbf{Theoretical} (\texttt{.out}) --- if the Gaussian route
+        contains a \texttt{\%chk=<name>.chk} line, the checkpoint stem
+        is used (e.g.\ \texttt{\%chk=B1\_td.chk} \(\Rightarrow\)
+        \texttt{sample\_id = "B1\_td"}). This keeps human-meaningful
+        molecule labels even when the raw files are queue-system
+        artefacts such as \texttt{slurm-5473089.out}. If no
+        \texttt{\%chk} line is present, the file stem is used as a
+        fallback.
+  \item \textbf{Experimental} --- one manifest entry is produced per
+        numeric series column, with
+        \texttt{sample\_id = "<series\_name>"} (the series column name
+        itself, so \texttt{Coumarin\_1} rather than a long file-stem
+        prefix).
+\end{itemize}
+
+\noindent If a manifest is supplied by hand and \texttt{sample\_id} is
+omitted, the same resolution rule is applied at analysis time.
+
+\subsection{Experimental data template}
+
+The same column layout applies to CSV, XLSX, and XLS files.
+
+\paragraph{CSV (\texttt{.csv}).}
+\begin{lstlisting}
+wavelength_nm,sample_A,sample_B
+300,0.12,0.08
+310,0.15,0.10
+320,0.18,0.14
+\end{lstlisting}
+
+\paragraph{Excel workbook (\texttt{.xlsx}\,/\,\texttt{.xls}).}
+The first row is interpreted as the header. Any numeric columns beside
+the wavelength axis are treated as independent samples:
+
+\begin{longtable}{@{}p{3.2cm}p{2.6cm}p{2.6cm}p{2.6cm}@{}}
+\toprule
+\textbf{wavelength\_nm} & \textbf{channel\_A} & \textbf{channel\_B} & \textbf{channel\_C} \\
+\midrule
+\endhead
+300 & 0.12 & 0.08 & 0.05 \\
+310 & 0.15 & 0.10 & 0.07 \\
+320 & 0.18 & 0.14 & 0.09 \\
+\bottomrule
+\end{longtable}
+
+\noindent Multi-sheet workbooks are fully supported. During
+\texttt{generate-input}, if no sheet override is supplied, the workbook
+sheets are scanned in order and the first sheet with a wavelength column
+and at least one numeric signal column is selected. In a hand-written
+manifest, if \texttt{sheet\_name} is omitted from an entry (or set to
+\texttt{null}), analysis reads the first workbook sheet. To force a
+specific sheet, edit the generated manifest entry or author it by hand:
+
+\begin{lstlisting}[language=jsonish]
+{
+  "input_type": "experimental",
+  "sample_id": "dye_panel__channel_A",
+  "source_path": "files/dye_panel.xlsx",
+  "series_name": "channel_A",
+  "sheet_name": "raw"
+}
+\end{lstlisting}
+
+\paragraph{Shared requirements (both formats).}
+\begin{itemize}
+  \item Exactly one wavelength column; accepted aliases
+        (case-insensitive): \texttt{wavelength},
+        \texttt{wavelength\_nm}, \texttt{lambda}, \texttt{wl},
+        \texttt{nm}. If no named wavelength column is found, the first
+        numeric column is used.
+  \item One or more numeric signal columns. Each signal is interpreted
+        as absorbance \(A(\lambda)\) and fed directly to the
+        Beer--Lambert absorptance definition
+        (\S\ref{sec:methodology}).
+  \item Rows with non-numeric or missing values in either the
+        wavelength or signal column are dropped silently; a series must
+        retain at least 10 valid rows to be analysed.
+\end{itemize}
+
+\subsection{Custom light sources}
+A custom light source is a two-column CSV with one wavelength column
+and a single numeric intensity column. The filename stem becomes the
+\texttt{light\_source\_name} in the results table.
+
+% ====================================================================
+\section{Output Schema}
+\label{sec:outputs}
+
+\begin{lstlisting}
+output/
+|-- tables/
+|   |-- results.{csv,json,xlsx}
+|   |-- results_timings.{csv,json,xlsx}
+|   |-- descriptor_summary.{csv,xlsx}
+|   |-- ranking_by_light_source__<metric>.{csv,json,xlsx}    # 4 metric variants
+|   |-- ranking_by_sample__<metric>.{csv,json,xlsx}           # 4 metric variants
+|   `-- skipped_inputs.{csv,json}           # emitted only if any inputs were skipped
+`-- plots/
+    |-- absorption/<sample>__{absolute,normalized}.tiff
+    |-- light_source/<light>.tiff
+    |-- overlap/<sample>__<light>__combined__{absolute,normalized}.tiff
+    |-- overlap/<sample>__<light>__<method>__{absolute,normalized}.tiff
+    |-- overlays/absorptance_overlay__<method>__{absolute,normalized}.tiff
+    |-- ranking/by_light_source/<metric>/<light>.tiff         # bar chart per light source
+    `-- ranking/by_sample/<metric>/<sample>.tiff              # bar chart per sample
+\end{lstlisting}
+
+\noindent \texttt{<metric>} cycles through the four overlap descriptors:
+\idtt{gaussian\_absorbed\_fraction},
+\idtt{lorentzian\_absorbed\_fraction},
+\idtt{gaussian\_shape\_overlap},
+\idtt{lorentzian\_shape\_overlap}. The ranking tables and bar
+charts can be suppressed with \idtt{-{}-no-ranking-outputs} (CLI)
+or \idtt{ranking\_outputs=false} (API).
+
+\subsection{\texttt{results.*} columns}
+One row per \((\text{sample\_id},\text{light\_source\_name})\) pair.
+Shared columns:
+
+\begin{longtable}{@{}>{\RaggedRight}p{6.2cm}>{\RaggedRight}p{9.2cm}@{}}
+\toprule
+\textbf{Column} & \textbf{Description} \\
+\midrule
+\endhead
+\idtt{source\_type}                    & \texttt{theoretical} or \texttt{experimental} \\
+\idtt{sample\_id}                      & Unique sample identifier \\
+\idtt{light\_source\_name}             & \texttt{AM15G}, \texttt{LEDB1}, \texttt{LEDB2}, \texttt{LEDB3}, \texttt{LEDB4}, \texttt{CIEFL10}, or custom stem \\
+\idtt{sigma\_ev}                       & Broadening \(\sigma\) used, eV (theoretical inputs) \\
+\idtt{light\_flux\_total}              & \(\int I(\lambda)\,d\lambda\) over the working grid \\
+\idtt{reference\_concentration\_molar} & Beer--Lambert \(c\) used, mol\,L\(^{-1}\) \\
+\idtt{reference\_path\_cm}             & Beer--Lambert \(L\) used, cm \\
+\idtt{absorption\_unit}                & Unit of \(\varepsilon\) / \(A\) in the exported row \\
+\idtt{light\_source\_unit}             & Unit of \(I(\lambda)\) (e.g.\ \texttt{W\,m\(^{-2}\)\,nm\(^{-1}\)} for AM1.5G) \\
+\idtt{absorbed\_flux\_unit}            & Unit of the absorbed-flux integral \\
+\idtt{td\_method\_basis}               & Route metadata from the TD-DFT file (null for experimental) \\
+\idtt{td\_solvent}                     & PCM solvent from the TD-DFT file (null for experimental) \\
+\bottomrule
+\end{longtable}
+
+\noindent Per-broadening columns (prefixes \texttt{gaussian\_} and
+\texttt{lorentzian\_}):
+
+\begin{longtable}{@{}>{\RaggedRight}p{4.8cm}>{\RaggedRight}p{10.6cm}@{}}
+\toprule
+\textbf{Suffix} & \textbf{Meaning} \\
+\midrule
+\endhead
+\idtt{lambda\_max\_nm}               & Peak wavelength of the broadened absorptance \\
+\idtt{molar\_absorptivity\_max}      & Peak \(\varepsilon\) in M\(^{-1}\,\)cm\(^{-1}\) (theoretical only) \\
+\idtt{absorptance\_max}              & Peak Beer--Lambert \(\alpha(\lambda)\) \\
+\idtt{absorbed\_flux}                & \(\int \alpha(\lambda)\,I(\lambda)\,d\lambda\) \\
+\idtt{absorbed\_fraction}            & \(\text{absorbed\_flux} / \text{light\_flux\_total}\in[0,1]\) \\
+\idtt{shape\_overlap}                & Dimensionless shape comparator on max-normalised spectra \\
+\bottomrule
+\end{longtable}
+
+\noindent Broadening deltas (Gaussian \(-\) Lorentzian):
+\idtt{delta\_absorbed\_flux},
+\idtt{delta\_absorbed\_fraction},
+\idtt{delta\_shape\_overlap},
+\idtt{abs\_delta\_absorbed\_fraction}.
+
+\subsection{\texttt{descriptor\_summary.*}}
+A condensed table of the most actionable per-sample descriptors across
+all light sources, suitable as a starting point for ranking.
+
+\subsection{\texttt{ranking\_by\_light\_source\_\_<metric>.*} and \texttt{ranking\_by\_sample\_\_<metric>.*}}
+\label{sec:rankings}
+
+Two complementary grouped rankings answer the two practical questions
+that arise from a multi-sample, multi-light-source run:
+
+\begin{itemize}
+\item \textbf{\idtt{ranking\_by\_light\_source\_\_<metric>.\{csv,json,xlsx\}}}
+      \textemdash{} within each light source, samples are ordered from
+      the highest to the lowest value of the chosen overlap metric. Use
+      this to ask: \emph{``Given this light source, which molecule
+      absorbs (or matches in shape) best?''}
+\item \textbf{\idtt{ranking\_by\_sample\_\_<metric>.\{csv,json,xlsx\}}}
+      \textemdash{} within each sample, light sources are ordered the
+      same way. Use this to ask: \emph{``For this molecule, which light
+      source gives the strongest overlap?''}
+\end{itemize}
+
+\noindent Each table is emitted four times \textemdash{} once per
+\texttt{<metric>} \textemdash{} covering both broadening methods
+(\texttt{gaussian\_*}, \texttt{lorentzian\_*}) and both metric families
+(\texttt{absorbed\_fraction}, \texttt{shape\_overlap}):
+
+\begin{longtable}{@{}>{\RaggedRight}p{6.4cm}>{\RaggedRight}p{9.0cm}@{}}
+\toprule
+\textbf{\texttt{<metric>}} & \textbf{Sorts by} \\
+\midrule
+\endhead
+\idtt{gaussian\_absorbed\_fraction}    & Beer--Lambert absorbed fraction with Gaussian broadening; intensity-weighted \\
+\idtt{lorentzian\_absorbed\_fraction}  & Beer--Lambert absorbed fraction with Lorentzian broadening; intensity-weighted \\
+\idtt{gaussian\_shape\_overlap}        & Shape-only correlation (intensity-independent) under Gaussian broadening \\
+\idtt{lorentzian\_shape\_overlap}      & Shape-only correlation (intensity-independent) under Lorentzian broadening \\
+\bottomrule
+\end{longtable}
+
+\noindent Both interpretations are reported because they answer
+different scientific questions: \texttt{absorbed\_fraction} tracks the
+fraction of incident photons that are actually absorbed under the
+chosen Beer--Lambert reference \((c, L)\) and is the right figure of
+merit for photocatalysis, photovoltaic action, or photo-excitation
+yield; \texttt{shape\_overlap} is a brightness-independent spectral
+matching score, appropriate when comparing differently-scaled
+illuminants on equal footing (\S\ref{sec:metric-choice}).
+
+Each row carries a \texttt{rank} column (1 = best within the group)
+and all four metric columns side by side, so the file can be
+re-sorted client-side without rerunning the pipeline. Companion bar
+charts are written to
+\idtt{plots/ranking/by\_light\_source/<metric>/<light>.tiff} and
+\idtt{plots/ranking/by\_sample/<metric>/<sample>.tiff}; titles and
+axis labels embed the chosen metric and the Beer--Lambert reference
+conditions to keep the figures unambiguous.
+
+\subsection{\texttt{skipped\_inputs.*}}
+Emitted whenever at least one input is rejected. The
+\texttt{tables/skipped\_inputs.\{csv,json\}} rows carry
+\texttt{sample\_id} and \texttt{reason} columns. The manifest-side
+\texttt{input/skipped\_inputs.json} produced by \texttt{generate-input}
+additionally carries the resolved \texttt{source\_path}. Each
+\texttt{reason} string is prefixed with the stage at which the input
+was skipped (\texttt{INPUT\_SKIPPED} / \texttt{INPUT\_ERROR} /
+\texttt{ANALYSIS\_ERROR}) followed by the error message.
+
+\subsection{\texttt{results\_timings.*}}
+One row per \texttt{(sample\_id, light\_source\_name)} pair. Shared
+columns: \texttt{source\_type}, \texttt{sample\_id},
+\texttt{light\_source\_name}, \texttt{plot\_ms}. Each broadening method
+contributes a five-column block (\texttt{gaussian\_parse\_tddft\_ms},
+\texttt{gaussian\_broadening\_ms}, \texttt{gaussian\_light\_source\_ms},
+\texttt{gaussian\_integrals\_ms}, \texttt{gaussian\_total\_sample\_ms},
+and the matching \texttt{lorentzian\_*} quintuplet). The row ends with
+\texttt{total\_pair\_ms} (sum of both methods' \texttt{total\_sample\_ms})
+and \texttt{total\_with\_plot\_ms} (\texttt{total\_pair\_ms +
+plot\_ms}).
+
+\subsection{Plots}
+TIFF plots are emitted at 400\,dpi by default and include both absolute
+and max-normalised variants. Use \idtt{-{}-plot-dpi 600} on the CLI or
+\idtt{plot\_dpi=600} in the API when larger publication-resolution
+files are worth the additional disk and transfer size.
+
+\begin{longtable}{@{}p{3.8cm}p{11.4cm}@{}}
+\toprule
+\textbf{Directory} & \textbf{Content} \\
+\midrule
+\endhead
+\texttt{absorption/}                                  & Per-sample absorptance spectra, both broadenings overlaid \\
+\texttt{light\_source/}                               & Each reference light source in isolation \\
+\texttt{overlap/<combined>}                           & (sample, light) overlap \textemdash{} both broadenings on one axes \\
+\texttt{overlap/<method>}                             & (sample, light) overlap \textemdash{} single broadening \\
+\texttt{overlays/}                                    & Multi-sample absorptance overlays per broadening \\
+\idtt{ranking/by\_light\_source/<metric>/}            & Bar chart per light source ranking samples by \texttt{<metric>} (descending) \\
+\idtt{ranking/by\_sample/<metric>/}                   & Bar chart per sample ranking light sources by \texttt{<metric>} (descending) \\
+\bottomrule
+\end{longtable}
+
+\noindent The overlap plots shade the geometric overlap area
+\(\min(\alpha(\lambda),\,\hat I(\lambda))\) (absolute panel) and
+\(\min(\hat\alpha(\lambda),\,\hat I(\lambda))\) (normalised panel).
+In the normalised panel the shaded region is exactly the integrand of
+\texttt{shape\_overlap}, so the figure and the numerical metric
+report the same quantity: the area bounded above by the lower of the
+two curves at every wavelength.
+
+% ====================================================================
+\section{Bundled Light Sources}
+\label{sec:lightsources}
+
+\begin{longtable}{@{}p{2cm}p{8cm}p{5.2cm}@{}}
+\toprule
+\textbf{Name} & \textbf{Source} & \textbf{Unit} \\
+\midrule
+\endhead
+\texttt{AM15G}   & NREL ASTM G-173 AM1.5G reference solar spectrum      & W\,m\(^{-2}\,\)nm\(^{-1}\) \\
+\texttt{LEDB1}   & CIE 15 illuminant LED-B1 (opt-in; not in default set) & relative (shape only) \\
+\texttt{LEDB2}   & CIE 15 illuminant LED-B2                             & relative (shape only) \\
+\texttt{LEDB3}   & CIE 15 illuminant LED-B3                             & relative \\
+\texttt{LEDB4}   & CIE 15 illuminant LED-B4                             & relative \\
+\texttt{CIEFL10} & CIE 15 fluorescent illuminant FL10                   & relative \\
+\bottomrule
+\end{longtable}
+
+\noindent Unit policy: because \texttt{AM15G} carries an absolute
+spectral irradiance, \idtt{absorbed\_flux} for AM1.5G has units of
+W\,m\(^{-2}\); for the relative CIE LED / FL sources
+\idtt{absorbed\_flux\_unit} is \idtt{relative\_integral} and only
+\idtt{absorbed\_fraction} and \idtt{shape\_overlap} are directly
+comparable across dyes.
+
+\paragraph{Third-party spectral data.}
+The \texttt{LEDB1}, \texttt{LEDB2}, \texttt{LEDB3}, \texttt{LEDB4}, and
+\texttt{CIEFL10} spectra are official \textbf{CIE} data sets
+derived from \emph{CIE 015:2018 Colorimetry, 4th Edition}
+(International Commission on Illumination,
+\url{https://cie.co.at/}). The \texttt{AM15G} spectrum is the ASTM
+G-173-03 AM1.5 global reference distributed by the U.S.\ National
+Renewable Energy Laboratory (NREL). See \S\ref{sec:citation} for
+full citations and BibTeX entries.
+
+% ====================================================================
+\section{Methodology}
+\label{sec:methodology}
+
+\subsection{Extinction spectrum from TD-DFT}
+
+Each excited state \(i\) contributes a normalised line profile in
+wavenumber space \(\tilde\nu = 10^{7}/\lambda[\text{nm}]\) (cm\(^{-1}\)):
+
+\begin{align}
+g_i(\tilde\nu) &= \frac{1}{\sigma\sqrt{2\pi}}\,
+                   \exp\!\Bigl(-\tfrac{(\tilde\nu - \tilde\nu_i)^2}{2\sigma^2}\Bigr), \\[2pt]
+l_i(\tilde\nu) &= \frac{1}{\pi}\,\frac{\gamma}{(\tilde\nu - \tilde\nu_i)^2 + \gamma^2},
+\qquad \gamma = \sqrt{2\ln 2}\,\sigma \approx 1.1774\,\sigma,
+\end{align}
+
+with \(\sigma\) in cm\(^{-1}\) obtained from the CLI \texttt{-{}-sigma-ev}
+via \(\sigma_{\text{cm}^{-1}} = \sigma_{\text{eV}} \cdot 8065.544\).
+Here \(\sigma\) is the Gaussian standard deviation
+(\(\mathrm{FWHM}_{\mathrm{G}} = 2\sqrt{2\ln 2}\,\sigma\approx 2.3548\,\sigma\));
+the Lorentzian half-width-at-half-maximum \(\gamma\) is set to
+\(\sqrt{2\ln 2}\,\sigma\) so that \emph{both line shapes share the
+same \emph{FWHM}} under a given \texttt{-{}-sigma-ev} value. This
+removes the implicit width mismatch between the two broadening models
+and keeps the Gaussian--Lorentzian sensitivity comparison a pure
+line-shape probe; the \texttt{delta\_*} columns therefore reflect
+tail behaviour rather than width difference. Both profiles are
+normalised in cm\(^{-1}\): \(\int p(\tilde\nu)\,d\tilde\nu = 1\). The
+molar extinction coefficient is then
+
+\begin{equation}
+\varepsilon(\lambda) = 2.315\times 10^{8}\;
+  \sum_i f_i\, \text{profile}_i\!\bigl(\tilde\nu(\lambda)\bigr)
+  \quad [\text{M}^{-1}\,\text{cm}^{-1}],
+\end{equation}
+
+where the prefactor comes from the integrated-absorption /
+oscillator-strength relation
+\(\int \varepsilon\,d\tilde\nu = 2.315\times 10^{8}\,\sum_i f_i\).
+
+\subsection{Beer--Lambert absorptance}
+
+\begin{equation}
+A(\lambda) = \varepsilon(\lambda)\,c\,L,\qquad
+\alpha(\lambda) = 1 - 10^{-A(\lambda)}
+\end{equation}
+
+with defaults \(c = 1\times 10^{-5}\,\text{M}\), \(L = 1\,\text{cm}\)
+(overridable via \texttt{-{}-concentration-m} / \texttt{-{}-path-cm}).
+For experimental inputs the user-provided signal is treated as
+absorbance \(A\) directly and fed to the same \(\alpha\) definition
+without the Beer--Lambert conversion.
+
+\subsection{Light-overlap metrics}
+
+\begin{align}
+\text{absorbed\_flux}      &= \int \alpha(\lambda)\,I(\lambda)\,d\lambda, \\
+\text{light\_flux\_total}  &= \int I(\lambda)\,d\lambda, \\
+\text{absorbed\_fraction}  &= \frac{\text{absorbed\_flux}}{\text{light\_flux\_total}} \in [0,1], \\
+\text{shape\_overlap}      &= \frac{\displaystyle\int \min\!\bigl(\hat\alpha(\lambda),\,\hat I(\lambda)\bigr)\,d\lambda}
+                                   {\displaystyle\int \hat I(\lambda)\,d\lambda},
+\end{align}
+
+where \(\hat\alpha\) and \(\hat I\) denote max-normalised shapes.
+\texttt{shape\_overlap} is the classical geometric spectral-overlap
+area: at every wavelength the integrand follows whichever of the two
+normalised profiles is smaller, so the shaded region in a normalised
+overlap plot equals the numerator directly. This descriptor is
+independent of absolute strength and lets LED / FL sources (relative
+intensities) still be compared.
+
+\subsection{Choosing between \texttt{absorbed\_fraction} and
+\texttt{shape\_overlap}}
+\label{sec:metric-choice}
+
+The two scalar overlap descriptors answer different questions and
+are \emph{both} emitted in the ranking tables and bar charts
+(\S\ref{sec:rankings}) so that no single metric is forced on the
+user:
+
+\begin{itemize}
+  \item \textbf{\texttt{absorbed\_fraction}} is the right figure of
+        merit when the application cares about the \emph{number of
+        photons (or the energy) actually absorbed} under a defined
+        Beer--Lambert reference state \((c, L)\) \textemdash{} for
+        example, photocatalytic turnover under a given illuminant,
+        photovoltaic action spectra, or photo-excitation yield. It
+        folds in \emph{both} spectral overlap and the absolute
+        spectral intensity of the light source: a brighter source
+        over the absorbing band is rewarded.
+  \item \textbf{\texttt{shape\_overlap}} is intensity-independent
+        and answers the brightness-blind question \emph{``how well
+        does the light source's spectral envelope match the
+        molecule's absorption envelope?''} It is the appropriate
+        descriptor when the spectra under comparison carry
+        incompatible intensity units (e.g.\ \texttt{W\,m\(^{-2}\)\,nm\(^{-1}\)}
+        for AM1.5G versus \texttt{relative} for the CIE LED
+        templates) and the reader needs a fair side-by-side
+        ordering.
+\end{itemize}
+
+\noindent Each descriptor is reported under both Gaussian and
+Lorentzian broadening (\S\ref{sec:methodology}), so the four ranking
+tables together expose the full sensitivity surface to the line-shape
+choice.
+
+\subsection{Skip policy}
+
+An input is diverted to \texttt{skipped\_inputs.*} when
+\begin{itemize}
+  \item the \texttt{.out} file lacks a TD route or any
+        \texttt{Excited State} line (tagged
+        \idtt{INPUT\_SKIPPED: file is not a TD-DFT output});
+  \item an experimental file cannot be read or has no numeric signal
+        column (tagged
+        \idtt{INPUT\_SKIPPED: failed to read experimental file} or
+        \idtt{INPUT\_SKIPPED: experimental file has no numeric series});
+  \item parsing fails at analysis time (tagged
+        \idtt{ANALYSIS\_ERROR: Failed to parse \ldots}).
+\end{itemize}
+
+% ====================================================================
+\section{Configuration and Environment Variables}
+\label{sec:config}
+
+All settings are read via \texttt{pydantic-settings} with the
+\texttt{GAUSS\_} prefix; a \texttt{.env} file in the working directory
+is honoured.
+
+\begin{longtable}{@{}>{\RaggedRight}p{7.2cm}>{\RaggedRight}p{3.6cm}>{\RaggedRight}p{4.8cm}@{}}
+\toprule
+\textbf{Variable} & \textbf{Default} & \textbf{Purpose} \\
+\midrule
+\endhead
+\idtt{GAUSS\_LOG\_LEVEL}                & \texttt{INFO}                               & Logging verbosity \\
+\idtt{GAUSS\_LOG\_FORMAT}               & \texttt{text}                               & \texttt{text} or \texttt{json} \\
+\idtt{GAUSS\_PLOT\_OUTPUTS}             & \texttt{true}                               & Emit TIFF plots \\
+\idtt{GAUSS\_PLOT\_DPI}                 & \(400\)                                     & Default TIFF plot resolution \\
+\idtt{GAUSS\_RANKING\_OUTPUTS}          & \texttt{true}                               & Emit grouped ranking tables and bar charts \\
+\idtt{GAUSS\_SIGMA\_EV}                 & \(0.30\)                                    & Default broadening \(\sigma\) \\
+\idtt{GAUSS\_WAVELENGTH\_MIN\_NM}       & \(200.0\)                                   & Grid lower bound, nm \\
+\idtt{GAUSS\_WAVELENGTH\_MAX\_NM}       & \(800.0\)                                   & Grid upper bound, nm \\
+\idtt{GAUSS\_WAVELENGTH\_POINTS}        & \(10000\)                                   & Number of grid points \\
+\idtt{GAUSS\_REFERENCE\_CONCENTRATION\_MOLAR} & \(1\text{e-}5\)                       & Beer--Lambert \(c\) \\
+\idtt{GAUSS\_REFERENCE\_PATH\_CM}       & \(1.0\)                                     & Beer--Lambert \(L\) \\
+\idtt{GAUSS\_DEFAULT\_LIGHT\_SOURCES}   & \idtt{AM15G,LEDB4,\ldots}                   & Default bundled-source list \\
+\idtt{GAUSS\_UPLOAD\_MAX\_MB}           & \(50\)                                      & API upload size cap \\
+\idtt{GAUSS\_UPLOAD\_ALLOWED\_EXTS}     & \idtt{.out,.log,.csv,.xlsx,.xls}            & Accepted upload extensions \\
+\bottomrule
+\end{longtable}
+
+\noindent CLI flags override environment variables when both are
+supplied.
+
+% ====================================================================
+\section{Troubleshooting}
+
+\begin{description}[style=nextline,leftmargin=1em,labelindent=0pt,font=\normalfont\ttfamily]
+  \item[No output generated]
+  Inspect \texttt{output/tables/skipped\_inputs.*} first and re-run
+  with \texttt{-{}-log-level DEBUG}. A common cause is a \texttt{.out}
+  file that is an OPT job, not a TD-DFT job, so it contains no
+  \texttt{Excited State} blocks.
+
+  \item[ParseError on an experimental file]
+  Confirm one column is a wavelength axis (alias list in \S\ref{sec:input})
+  and at least one other column is numeric. Non-numeric /
+  date-formatted columns are dropped silently.
+
+  \item[Custom light source is ignored]
+  Check that the file has exactly one wavelength column and one
+  numeric intensity column. The filename stem becomes the
+  \texttt{light\_source\_name}; if that name collides with a bundled
+  source the custom file wins.
+
+  \item[CLI options seem outdated]
+  After switching branches, re-install the package:
+  \texttt{pip install -e .}.
+
+  \item[Unexpected absorbed\_fraction near 0 for a CIE LED source]
+  Check that the dye's \(\lambda_\text{max}\) falls within the LED
+  emission band. \texttt{shape\_overlap} is often more informative
+  than \texttt{absorbed\_fraction} for narrow-band relative sources.
+\end{description}
+
+% ====================================================================
+\section{Citation and License}
+\label{sec:citation}
+
+If you use \texttt{overlap-calculator} in published work, please
+cite the concept DOI below. It resolves to the latest archived
+release on Zenodo, so the citation stays valid across versions
+without needing an update.
+
+\begin{quote}
+Seyitdanl{\i}o{\u{g}}lu, P. \emph{overlap-calculator: Batch
+spectral-overlap analysis between TD-DFT / experimental absorption and
+reference light sources.} Zenodo.
+\url{https://doi.org/10.5281/zenodo.19944515}
+\end{quote}
+
+BibTeX:
+\begin{lstlisting}
+@software{seyitdanlioglu_overlap_calculator,
+  author    = {Seyitdanl{\i}o{\u{g}}lu, P{\i}nar},
+  title     = {{overlap-calculator}: Batch spectral-overlap analysis
+               between TD-DFT / experimental absorption and reference
+               light sources},
+  year      = {2026},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.19944515},
+  url       = {https://doi.org/10.5281/zenodo.19944515}
+}
+\end{lstlisting}
+
+\subsection*{Acknowledgement of third-party data}
+
+The bundled CIE LED illuminants (\texttt{LEDB1}, \texttt{LEDB2},
+\texttt{LEDB3}, \texttt{LEDB4}) and fluorescent illuminant
+(\texttt{CIEFL10}) are official \textbf{CIE} data sets derived from
+\emph{CIE 015:2018 Colorimetry, 4th Edition}. The \texttt{AM15G}
+spectrum is the ASTM G-173-03 AM1.5 global reference distributed by
+the U.S.\ National Renewable Energy Laboratory (NREL). The bundled
+experimental absorbance workbook
+(\texttt{input/files/organic\_uvvis\_photochemcad\_dataset.xlsx}) is
+derived from the \textbf{PhotochemCAD} spectral database. If you use
+\texttt{overlap-calculator} in published work, please cite the data
+sets alongside the software:
+
+\begin{quote}
+CIE (2018). \emph{Relative spectral power distributions of
+illuminants representing typical LED lamps, 1\,nm spacing.}
+International Commission on Illumination, Vienna, AT.
+DOI: \href{https://doi.org/10.25039/CIE.DS.dhcw57sd}{10.25039/CIE.DS.dhcw57sd}
+\end{quote}
+
+\begin{quote}
+CIE (2018). \emph{Relative spectral power distributions of
+illuminants representing typical fluorescent lamps, 1\,nm wavelength
+steps.} International Commission on Illumination, Vienna, AT.
+DOI: \href{https://doi.org/10.25039/CIE.DS.54hy6srn}{10.25039/CIE.DS.54hy6srn}
+\end{quote}
+
+\begin{quote}
+CIE (2018). \emph{CIE 015:2018 Colorimetry, 4th Edition.}
+International Commission on Illumination, Vienna, AT.
+\url{https://cie.co.at/publications/colorimetry-4th-edition/}
+\end{quote}
+
+\begin{quote}
+NREL. \emph{Reference Air Mass 1.5 Spectra (ASTM G-173-03).} U.S.\
+National Renewable Energy Laboratory.
+\url{https://www.nrel.gov/grid/solar-resource/spectra-am1.5.html}
+\end{quote}
+
+\begin{quote}
+Taniguchi, M., \& Lindsey, J.~S. (2018). Database of absorption and
+fluorescence spectra of {>}300 common compounds for use in
+PhotochemCAD. \emph{Photochemistry and Photobiology}, \textbf{94}(2),
+290--327.
+DOI: \href{https://doi.org/10.1111/php.12860}{10.1111/php.12860}
+\end{quote}
+
+BibTeX:
+\begin{lstlisting}
+@techreport{cie_led_illuminants_2018,
+  author      = {{International Commission on Illumination}},
+  title       = {Relative spectral power distributions of illuminants
+                 representing typical {LED} lamps, 1\,nm spacing},
+  institution = {CIE Central Bureau},
+  address     = {Vienna, AT},
+  year        = {2018},
+  doi         = {10.25039/CIE.DS.dhcw57sd},
+  url         = {https://doi.org/10.25039/CIE.DS.dhcw57sd}
+}
+
+@techreport{cie_fl_illuminants_2018,
+  author      = {{International Commission on Illumination}},
+  title       = {Relative spectral power distributions of illuminants
+                 representing typical fluorescent lamps, 1\,nm wavelength steps},
+  institution = {CIE Central Bureau},
+  address     = {Vienna, AT},
+  year        = {2018},
+  doi         = {10.25039/CIE.DS.54hy6srn},
+  url         = {https://doi.org/10.25039/CIE.DS.54hy6srn}
+}
+
+@techreport{cie_015_2018,
+  author      = {{International Commission on Illumination}},
+  title       = {{CIE} 015:2018 Colorimetry, 4th Edition},
+  institution = {CIE Central Bureau},
+  address     = {Vienna, AT},
+  year        = {2018},
+  isbn        = {978-3-902842-13-8}
+}
+
+@misc{nrel_am15g,
+  author       = {{National Renewable Energy Laboratory}},
+  title        = {Reference Air Mass 1.5 Spectra ({ASTM} {G-173-03})},
+  howpublished = {\url{https://www.nrel.gov/grid/solar-resource/spectra-am1.5.html}},
+  institution  = {U.S. Department of Energy}
+}
+
+@article{taniguchi_lindsey_photochemcad_2018,
+  author  = {Taniguchi, Masahiko and Lindsey, Jonathan S.},
+  title   = {Database of Absorption and Fluorescence Spectra of
+             {>}300 Common Compounds for Use in {PhotochemCAD}},
+  journal = {Photochemistry and Photobiology},
+  volume  = {94},
+  number  = {2},
+  pages   = {290--327},
+  year    = {2018},
+  doi     = {10.1111/php.12860},
+  url     = {https://doi.org/10.1111/php.12860}
+}
+\end{lstlisting}
+
+Please consult the CIE at \url{https://cie.co.at/} for the
+authoritative reference tables and the latest errata.
+
+\texttt{overlap-calculator} is released under the \textbf{GNU General
+Public License v3.0 or later} (see \texttt{LICENSE} in the source
+distribution).
+
+\end{document}

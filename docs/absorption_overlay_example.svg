@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520">
+  <rect width="900" height="520" fill="#ffffff"/>
+  <text x="450" y="42" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" fill="#0f172a">
+    Example Output: Absorption Overlay
+  </text>
+
+  <line x1="90" y1="450" x2="840" y2="450" stroke="#1f2937" stroke-width="2"/>
+  <line x1="90" y1="80" x2="90" y2="450" stroke="#1f2937" stroke-width="2"/>
+
+  <text x="465" y="495" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#334155">
+    Wavelength (nm)
+  </text>
+  <text x="28" y="270" transform="rotate(-90 28 270)" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#334155">
+    Absorbance (a.u.)
+  </text>
+
+  <path d="M90 420 C180 390, 230 300, 300 210 C340 165, 400 160, 455 210 C515 265, 590 290, 670 330 C740 365, 790 390, 840 415"
+        fill="none" stroke="#0f766e" stroke-width="4"/>
+  <path d="M90 430 C170 410, 240 350, 320 290 C390 240, 460 200, 540 220 C610 240, 680 300, 760 360 C795 385, 815 400, 840 420"
+        fill="none" stroke="#1d4ed8" stroke-width="4"/>
+  <path d="M90 435 C190 425, 260 390, 360 335 C430 300, 520 280, 600 300 C680 320, 760 360, 840 410"
+        fill="none" stroke="#b91c1c" stroke-width="4"/>
+
+  <line x1="585" y1="105" x2="640" y2="105" stroke="#0f766e" stroke-width="4"/>
+  <text x="650" y="111" font-family="Arial, sans-serif" font-size="16" fill="#0f172a">sample_01</text>
+  <line x1="585" y1="133" x2="640" y2="133" stroke="#1d4ed8" stroke-width="4"/>
+  <text x="650" y="139" font-family="Arial, sans-serif" font-size="16" fill="#0f172a">sample_02</text>
+  <line x1="585" y1="161" x2="640" y2="161" stroke="#b91c1c" stroke-width="4"/>
+  <text x="650" y="167" font-family="Arial, sans-serif" font-size="16" fill="#0f172a">sample_03</text>
+
+  <text x="122" y="472" font-family="Arial, sans-serif" font-size="14" fill="#475569">200</text>
+  <text x="250" y="472" font-family="Arial, sans-serif" font-size="14" fill="#475569">300</text>
+  <text x="378" y="472" font-family="Arial, sans-serif" font-size="14" fill="#475569">400</text>
+  <text x="506" y="472" font-family="Arial, sans-serif" font-size="14" fill="#475569">500</text>
+  <text x="634" y="472" font-family="Arial, sans-serif" font-size="14" fill="#475569">600</text>
+  <text x="762" y="472" font-family="Arial, sans-serif" font-size="14" fill="#475569">700</text>
+</svg>
