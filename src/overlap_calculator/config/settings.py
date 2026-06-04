@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     plot_dpi: int = Field(default=400, ge=72)
     ranking_outputs: bool = True
     sigma_ev: float = Field(default=0.30, gt=0.0)
+    prefactor_mode: str = "constant"
+    sigma_mode: str = "fixed"
+    reorganization_ev: float = Field(default=0.30, gt=0.0)
+    temperature_k: float = Field(default=298.15, gt=0.0)
     wavelength_min_nm: float = Field(default=200.0, gt=0.0)
     wavelength_max_nm: float = Field(default=800.0, gt=0.0)
     wavelength_points: int = Field(default=10000, ge=50)
@@ -34,6 +38,32 @@ class Settings(BaseSettings):
             allowed = ", ".join(sorted(VALID_LOG_LEVELS))
             raise InputError(
                 format_error(ErrorCode.INPUT, f"Invalid log level: {value}. Allowed: {allowed}")
+            )
+        return normalized
+
+    @field_validator("prefactor_mode")
+    @classmethod
+    def validate_prefactor_mode(cls, value: str) -> str:
+        normalized = value.strip().lower()
+        if normalized not in {"constant", "frequency-resolved"}:
+            raise InputError(
+                format_error(
+                    ErrorCode.INPUT,
+                    f"Invalid prefactor_mode: {value}. Allowed: constant, frequency-resolved",
+                )
+            )
+        return normalized
+
+    @field_validator("sigma_mode")
+    @classmethod
+    def validate_sigma_mode(cls, value: str) -> str:
+        normalized = value.strip().lower()
+        if normalized not in {"fixed", "marcus-hush"}:
+            raise InputError(
+                format_error(
+                    ErrorCode.INPUT,
+                    f"Invalid sigma_mode: {value}. Allowed: fixed, marcus-hush",
+                )
             )
         return normalized
 

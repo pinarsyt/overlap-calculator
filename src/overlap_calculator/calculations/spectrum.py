@@ -12,6 +12,8 @@ from overlap_calculator.models import ExcitedState
 from overlap_calculator.utils.errors import ErrorCode, format_error
 
 VALID_BROADENING_METHODS = {"gaussian", "lorentzian"}
+VALID_PREFACTOR_MODES = {"constant", "frequency-resolved"}
+VALID_SIGMA_MODES = {"fixed", "marcus-hush"}
 BUILTIN_LIGHT_SOURCES: dict[str, str] = {
     "AM15G": "light_source_am15g.csv",
 }
@@ -42,6 +44,10 @@ REFERENCE_CONCENTRATION_MOLAR = 1.0e-5
 REFERENCE_PATH_CM = 1.0
 GAUSSIAN_STD_TO_HWHM = math.sqrt(2.0 * math.log(2.0))
 
+# Boltzmann constant in eV K^-1 (CODATA 2018); k_B*T = 0.025693 eV at 298.15 K.
+BOLTZMANN_EV_PER_K = 8.617333262e-5
+DEFAULT_TEMPERATURE_K = 298.15
+
 
 def ev_to_cm1(ev: float) -> float:
     return ev * CM1_PER_EV
@@ -70,6 +76,55 @@ def validate_sigma_ev(sigma_ev: float) -> float:
     return sigma_ev
 
 
+def validate_prefactor_mode(mode: str) -> str:
+    normalized = mode.strip().lower()
+    if normalized not in VALID_PREFACTOR_MODES:
+        allowed = ", ".join(sorted(VALID_PREFACTOR_MODES))
+        raise InputError(
+            format_error(
+                ErrorCode.INPUT,
+                f"Invalid prefactor mode: {mode}. Allowed: {allowed}",
+            )
+        )
+    return normalized
+
+
+def validate_sigma_mode(mode: str) -> str:
+    normalized = mode.strip().lower()
+    if normalized not in VALID_SIGMA_MODES:
+        allowed = ", ".join(sorted(VALID_SIGMA_MODES))
+        raise InputError(
+            format_error(
+                ErrorCode.INPUT,
+                f"Invalid sigma mode: {mode}. Allowed: {allowed}",
+            )
+        )
+    return normalized
+
+
+def marcus_hush_sigma_ev(
+    reorganization_ev: float,
+    temperature_k: float = DEFAULT_TEMPERATURE_K,
+) -> float:
+    """Classical Marcus-Hush Gaussian width in eV from a reorganization energy.
+
+    The high-temperature Marcus absorption band is a Gaussian in energy whose
+    variance is ``2 * lambda * k_B * T``; hence the standard deviation is
+    ``sqrt(2 * lambda * k_B * T)``. For ``lambda = 0.30`` eV at 298.15 K this
+    returns ``0.12416`` eV (FWHM ``0.29234`` eV).
+
+    >>> round(marcus_hush_sigma_ev(0.30, 298.15), 5)
+    0.12416
+    """
+    if reorganization_ev <= 0:
+        raise InputError(
+            format_error(ErrorCode.INPUT, "reorganization energy must be > 0.")
+        )
+    if temperature_k <= 0:
+        raise InputError(format_error(ErrorCode.INPUT, "temperature must be > 0 K."))
+    return math.sqrt(2.0 * reorganization_ev * BOLTZMANN_EV_PER_K * temperature_k)
+
+
 def validate_wavelength_grid(
     wavelength_min_nm: float,
     wavelength_max_nm: float,
@@ -96,20 +151,51 @@ def build_extinction_spectrum(
     wavelength_min_nm: float,
     wavelength_max_nm: float,
     num_points: int,
+    prefactor_mode: str = "constant",
+    per_state_sigma_ev: list[float] | None = None,
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Reconstruct the molar extinction spectrum from TD-DFT excited states.
+
+    Each band carries integrated intensity ``P * f_i`` with
+    ``P = 2.315e8`` M^-1 cm^-2 (Hilborn/Mulliken oscillator-strength relation).
+
+    ``prefactor_mode``:
+      - ``"constant"`` (default): ``eps(nu) = sum_i P f_i g_i(nu - nu_i)`` with a
+        normalized lineshape ``g_i``. The band area is ``P f_i`` independent of
+        ``nu_i`` (integrated-intensity convention; validated for 200-800 nm).
+      - ``"frequency-resolved"``: keeps the wavenumber factor inside the
+        integrand, ``eps(nu) = sum_i P f_i (nu / nu_i) g_i(nu - nu_i)``, since the
+        dipole strength (not f) is the band-shape-invariant. The band area is
+        unchanged for a symmetric lineshape; the two modes differ in peak height
+        and position by ``O((sigma/nu_i)^2)`` (~<2 % over 200-800 nm).
+
+    ``per_state_sigma_ev`` overrides ``sigma_ev`` per transition (aligned to
+    ``excited_states``); used by the Marcus-Hush and calibration paths.
+    """
     method = validate_broadening_method(method)
+    prefactor_mode = validate_prefactor_mode(prefactor_mode)
     sigma_ev = validate_sigma_ev(sigma_ev)
     wl_min, wl_max, points = validate_wavelength_grid(
         wavelength_min_nm, wavelength_max_nm, num_points
     )
+    if per_state_sigma_ev is not None and len(per_state_sigma_ev) != len(excited_states):
+        raise InputError(
+            format_error(
+                ErrorCode.INPUT,
+                "per_state_sigma_ev length must match the number of excited states.",
+            )
+        )
     wavelengths_nm = np.linspace(wl_min, wl_max, points, dtype=np.float64)
     nu_grid_cm1 = nm_to_cm1(wavelengths_nm)
-    sigma_cm1 = ev_to_cm1(sigma_ev)
 
     epsilon = np.zeros_like(wavelengths_nm)
-    for state in excited_states:
+    for index, state in enumerate(excited_states):
         if state.wavelength_nm <= 0:
             continue
+        state_sigma_ev = (
+            per_state_sigma_ev[index] if per_state_sigma_ev is not None else sigma_ev
+        )
+        sigma_cm1 = ev_to_cm1(validate_sigma_ev(state_sigma_ev))
         nu_center_cm1 = 1.0e7 / state.wavelength_nm
         f = state.oscillator_strength
         if method == "gaussian":
@@ -121,6 +207,8 @@ def build_extinction_spectrum(
             profile = (gamma_cm1 / math.pi) / (
                 (nu_grid_cm1 - nu_center_cm1) ** 2 + gamma_cm1**2
             )
+        if prefactor_mode == "frequency-resolved":
+            profile = profile * (nu_grid_cm1 / nu_center_cm1)
         epsilon += EPSILON_PREFACTOR_M_1_CM_2 * f * profile
     return wavelengths_nm, epsilon
 

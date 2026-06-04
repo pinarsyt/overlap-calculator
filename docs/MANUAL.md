@@ -33,9 +33,10 @@ see [case_studies/](../case_studies/).
 7. [Output Schema](#7-output-schema)
 8. [Bundled Light Sources](#8-bundled-light-sources)
 9. [Methodology](#9-methodology)
-10. [Configuration and Environment Variables](#10-configuration-and-environment-variables)
-11. [Troubleshooting](#11-troubleshooting)
-12. [Citation and License](#12-citation-and-license)
+10. [Use as a Library](#10-use-as-a-library)
+11. [Configuration and Environment Variables](#11-configuration-and-environment-variables)
+12. [Troubleshooting](#12-troubleshooting)
+13. [Citation and License](#13-citation-and-license)
 
 ---
 
@@ -198,7 +199,7 @@ overlap-calculator generate-input --files-dir PATH [--out PATH] [--log-level LEV
 Runs the full pipeline on a manifest and writes all exports.
 
 ```
-overlap-calculator analyze --input PATH [--out PATH] [--sigma-ev FLOAT] [--wl-min FLOAT] [--wl-max FLOAT] [--num-points INT] [--concentration-m FLOAT] [--path-cm FLOAT] [--default-light-sources STR] [--light-source-file PATH]... [--plot-outputs / --no-plot-outputs] [--plot-dpi INT] [--ranking-outputs / --no-ranking-outputs] [--log-level LEVEL] [--log-format FORMAT]
+overlap-calculator analyze --input PATH [--out PATH] [--sigma-ev FLOAT] [--wl-min FLOAT] [--wl-max FLOAT] [--num-points INT] [--concentration-m FLOAT] [--path-cm FLOAT] [--prefactor-mode {constant,frequency-resolved}] [--sigma-mode {fixed,marcus-hush}] [--reorganization-ev FLOAT] [--temperature-k FLOAT] [--calibration PATH] [--default-light-sources STR] [--light-source-file PATH]... [--plot-outputs / --no-plot-outputs] [--plot-dpi INT] [--ranking-outputs / --no-ranking-outputs] [--log-level LEVEL] [--log-format FORMAT]
 ```
 
 | Flag                       | Default                          | Description                                         |
@@ -211,6 +212,11 @@ overlap-calculator analyze --input PATH [--out PATH] [--sigma-ev FLOAT] [--wl-mi
 | `--num-points`             | `10000`                          | Number of grid points between `wl-min` and `wl-max` |
 | `--concentration-m`        | `1e-5`                           | Beer–Lambert reference concentration, mol L⁻¹       |
 | `--path-cm`                | `1.0`                            | Beer–Lambert reference path length, cm              |
+| `--prefactor-mode`         | `constant`                       | Oscillator-strength → ε convention: `constant` (integrated intensity; default) or `frequency-resolved` (keeps the wavenumber factor inside the integrand; relevant for NIR bands). See [§9.6](#96-choice-of-prefactor-and-broadening-width). |
+| `--sigma-mode`             | `fixed`                          | Broadening width source: `fixed` (use `--sigma-ev`) or `marcus-hush` (per-transition σ = sqrt(2·λ·k_B·T) from `--reorganization-ev` and `--temperature-k`). See [§9.6](#96-choice-of-prefactor-and-broadening-width). |
+| `--reorganization-ev`      | `0.30`                           | Reorganization energy λ in eV; used when `--sigma-mode marcus-hush` |
+| `--temperature-k`          | `298.15`                         | Temperature in K for the Marcus–Hush width          |
+| `--calibration`            | *(none)*                         | Optional TOML calibration file (CLI and library only). See [§9.7](#97-calibration). |
 | `--default-light-sources`  | `AM15G,LEDB4,LEDB2,LEDB3,CIEFL10`| Comma-separated list of bundled light sources       |
 | `--light-source-file`      | *(none)*                         | Repeatable path to a custom light-source CSV        |
 | `--plot-outputs`           | on                               | Emit TIFF plots. Disable with `--no-plot-outputs`   |
@@ -258,6 +264,10 @@ request bodies are otherwise identical.
 | `num_points`              | int (optional)     | Grid size (default `10000`)                                          |
 | `concentration_m`         | float (optional)   | Beer–Lambert reference concentration (default `1e-5`)                |
 | `path_cm`                 | float (optional)   | Beer–Lambert reference path length (default `1.0`)                   |
+| `prefactor_mode`          | str (optional)     | `constant` (default) or `frequency-resolved`                         |
+| `sigma_mode`              | str (optional)     | `fixed` (default) or `marcus-hush`                                    |
+| `reorganization_ev`       | float (optional)   | Reorganization energy λ in eV; used when `sigma_mode=marcus-hush` (default `0.30`) |
+| `temperature_k`           | float (optional)   | Temperature in K for the Marcus–Hush width (default `298.15`)         |
 | `default_light_sources`   | str (optional)     | Comma-separated bundled-source list                                   |
 | `plot_outputs`            | bool (optional)    | Enable / disable plot generation                                      |
 | `plot_dpi`                | int (optional)     | TIFF plot resolution (default `400`; use `600` for larger exports)    |
@@ -316,7 +326,7 @@ produces identical downstream columns, plots, and overlap metrics.
 | Experimental   | `.xlsx`, `.xls`           | `pandas.read_excel` (`openpyxl` / `xlrd`) | Multi-sheet workbooks supported via `sheet_name`; `generate-input` auto-selects the first analyzable sheet |
 
 Bulk uploads via the HTTP API share the same matrix (see
-`GAUSS_UPLOAD_ALLOWED_EXTS` in [§10](#10-configuration-and-environment-variables)).
+`GAUSS_UPLOAD_ALLOWED_EXTS` in [§11](#11-configuration-and-environment-variables)).
 
 ### 6.2 Manifest (`input.json`)
 
@@ -431,6 +441,7 @@ All exports are written to the `--out` directory.
 
 ```
 output/
+├── run_manifest.json                                          # provenance record (see §7.7)
 ├── tables/
 │   ├── results.{csv,json,xlsx}
 │   ├── results_timings.{csv,json,xlsx}
@@ -473,6 +484,9 @@ One row per `(sample_id, light_source_name)` pair. Shared columns:
 | `absorbed_flux_unit`            | Unit of the absorbed-flux integral                                |
 | `td_method_basis`               | Route metadata from the TD-DFT file (null for experimental)       |
 | `td_solvent`                    | PCM solvent from the TD-DFT file (null for experimental)          |
+| `prefactor_mode`                | `constant` or `frequency-resolved` — the prefactor convention used for this row |
+| `sigma_mode`                    | `fixed` or `marcus-hush` — the width-source used for this row     |
+| `software_version`              | Package version string at run time                                |
 
 Per-broadening columns (prefixes `gaussian_` and `lorentzian_`):
 
@@ -568,6 +582,37 @@ same quantity: the area under the lower of the two curves at every
 wavelength. The ranking bar charts annotate each
 bar with its numerical metric value and embed the metric name and
 Beer–Lambert reference conditions in the y-axis label and title.
+
+### 7.7 `run_manifest.json`
+
+Every `analyze` run writes `run_manifest.json` directly inside the
+output root directory (at the same level as `tables/` and `plots/`).
+The file records enough information to trace any result back to its
+exact inputs and parameters.
+
+Top-level fields:
+
+| Field | Description |
+| ----- | ----------- |
+| `software_version` | Installed package version string |
+| `git_commit` | Full git SHA of the running commit; `null` if unavailable (e.g. installed from a wheel) |
+| `generated_at_utc` | ISO-8601 UTC timestamp of the run |
+| `parameters` | Full resolved runtime parameter set: `sigma_ev`, `prefactor_mode`, `sigma_mode`, `reorganization_ev`, `temperature_k`, wavelength grid, Beer–Lambert constants, light-source lists, and the full calibration block when `--calibration` was supplied |
+| `light_sources` | Sorted list of light-source names used in the run |
+| `inputs` | Array — one object per source file (see below) |
+| `results_count` | Number of `RunResult` rows produced |
+| `skipped_count` | Number of inputs that were skipped |
+
+Each element of `inputs`:
+
+| Field | Description |
+| ----- | ----------- |
+| `sample_id` | Sample identifier from the manifest |
+| `input_type` | `"theoretical"` or `"experimental"` |
+| `source_path` | Run-directory-relative path to the source file (never an absolute machine path); content fingerprinted by `sha256` |
+| `series_name` | Series column name (experimental inputs only; otherwise `null`) |
+| `sheet_name` | Sheet name (Excel inputs with an explicit sheet override; otherwise `null`) |
+| `sha256` | SHA-256 hex digest of the file contents at run time; `null` if the file was not readable |
 
 ---
 
@@ -704,9 +749,183 @@ An input is diverted to `skipped_inputs.*` when:
 - parsing fails at analysis time — tagged
   `ANALYSIS_ERROR: Failed to parse …`.
 
+### 9.6 Choice of prefactor and broadening width
+
+#### Prefactor modes
+
+The oscillator-strength prefactor `P = 2.315 × 10⁸ M⁻¹ cm⁻²` comes
+from the Hilborn/Mulliken oscillator-strength relation: the integrated
+band area equals `P·f`.
+
+**Constant prefactor** (`--prefactor-mode constant`, default):
+
+```
+ε(ν) = Σᵢ P fᵢ gᵢ(ν − νᵢ)
+```
+
+where `gᵢ` is a normalized lineshape. The band area equals `P·fᵢ`
+independent of `νᵢ`. This is the validated convention for the 200–800 nm
+visible range.
+
+**Frequency-resolved prefactor** (`--prefactor-mode frequency-resolved`):
+
+```
+ε(ν) = Σᵢ P fᵢ (ν/νᵢ) gᵢ(ν − νᵢ)
+```
+
+The integrated band area is unchanged for a symmetric lineshape. The two
+modes differ only in peak height (by approximately +½·(σ/νᵢ)²) and in a
+small blue-shift of the peak, of order O((σ/νᵢ)²). This difference is
+below ~2 % over 200–800 nm for σ = 0.30 eV, and grows into the NIR.
+
+**Recommendation:** use `constant` for the validated visible range; use
+`frequency-resolved` for NIR bands.
+
+#### Lineshape definitions
+
+Gaussian:
+
+```
+g(x) = exp(−x² / (2·σ_cm²)) / (σ_cm·√(2π))
+```
+
+with `σ_cm = σ_eV × 8065.5439` (cm⁻¹).
+
+Lorentzian (FWHM-matched to the Gaussian):
+
+```
+l(x) = (γ/π) / (x² + γ²),   γ = σ_cm·√(2 ln 2)
+```
+
+#### Marcus–Hush width
+
+The classical high-temperature Marcus absorption band is a Gaussian in
+energy whose variance is `2·λ·k_B·T`. Therefore:
+
+```
+σ_E = sqrt(2 · λ · k_B · T)
+```
+
+with `k_B·T = 0.025693 eV` at 298.15 K.
+
+Example: λ = 0.30 eV, T = 298.15 K → σ_E = 0.12416 eV (FWHM = 0.29234 eV).
+
+> **Caveat.** This is the classical (high-temperature) limit. For organic
+> vibrational baths (vibrational frequencies ~1400 cm⁻¹), ℏω >> k_B·T,
+> so the Marcus–Hush width is a first-order estimate rather than a
+> quantitative bandshape. For quantitative bandshape work, use
+> vibronic (Franck–Condon) spectra supplied through the
+> experimental/spreadsheet (CSV/XLSX) input branch — the tool is not
+> locked to Gaussian broadening and processes any tabular absorption
+> spectrum through the identical descriptor pipeline.
+
+### 9.7 Calibration
+
+A calibration block supplied via `--calibration PATH` (CLI and library)
+is applied **before** broadening and does not change the output path.
+
+The calibration performs three operations, all optional and independent:
+
+1. **Energy map** `E_cal = a·E + b` (E and b in eV). Wavelength is
+   recomputed from the calibrated energy via `λ = 1239.841984 / E_cal`
+   only when the map is non-identity (i.e. when `a ≠ 1` or `b ≠ 0`).
+
+2. **Oscillator-strength scaling** `f_cal = α·f`.
+
+3. **Per-band overrides**: optional per-transition sigma (`sigma_ev`) or
+   reorganization energy (`reorganization_ev`) that take precedence over
+   the global `--sigma-ev` / `--reorganization-ev` values.
+
+Guards: `α > 0` and every `E_cal > 0` are enforced. The identity
+calibration (`a = 1`, `b = 0`, `α = 1`, no band overrides) produces
+output bit-identical to running without `--calibration`.
+
+**TOML schema:**
+
+```toml
+[energy]
+a = 1.0
+b = 0.0
+
+[oscillator]
+alpha = 1.0
+
+[[band]]
+index = 1            # 1-based excited-state index
+sigma_ev = 0.25      # width override (eV)
+reorganization_ev = 0.40
+```
+
+All sections and all keys are optional. Omitted keys take their identity /
+default values.
+
+> **Note.** `--calibration` is available on the CLI and via the Python
+> library. The HTTP API does not accept calibration files.
+
 ---
 
-## 10. Configuration and Environment Variables
+## 10. Use as a Library
+
+`overlap_calculator` is installable as a Python package and exposes a
+fully typed public API. Every name listed below is importable directly
+from `overlap_calculator`.
+
+### 10.1 Minimal snippet
+
+```python
+from overlap_calculator import analyze
+from overlap_calculator.models import AnalysisInput
+
+items = [AnalysisInput(input_type="theoretical", source_path="tddft.out", sample_id="dye-1")]
+results, skipped = analyze(items, default_light_sources=["AM15G"])
+```
+
+### 10.2 `analyze` signature
+
+```python
+analyze(
+    items: list[AnalysisInput],
+    *,
+    sigma_ev: float = 0.30,
+    wl_min: float = 200.0,
+    wl_max: float = 800.0,
+    num_points: int = 10000,
+    concentration_molar: float = 1e-5,
+    path_cm: float = 1.0,
+    default_light_sources: list[str] | None = None,
+    custom_light_source_paths: list[Path] | None = None,
+    prefactor_mode: str = "constant",
+    sigma_mode: str = "fixed",
+    reorganization_ev: float = 0.30,
+    temperature_k: float = 298.15,
+    calibration: Calibration | None = None,
+) -> tuple[list[RunResult], list[AnalysisSkip]]
+```
+
+### 10.3 Public API names
+
+| Name | Purpose |
+| ---- | ------- |
+| `analyze` | High-level entry point — full pipeline |
+| `analyze_inputs` | Lower-level batch runner |
+| `export_results` | Write tables and plots from a `results` list |
+| `prepare_output_dir` | Create the output directory tree |
+| `build_extinction_spectrum` | Reconstruct ε(λ) from TD-DFT excited states |
+| `compute_absorbance` | Beer–Lambert A(λ) = ε·c·L |
+| `compute_absorptance` | α(λ) = 1 − 10^(−A) |
+| `shape_overlap` | Dimensionless spectral shape comparator |
+| `integrate_light_flux` | ∫ I(λ) dλ |
+| `integrate_absorbed_flux` | ∫ α(λ)·I(λ) dλ |
+| `load_light_sources` | Load bundled and custom light sources |
+| `marcus_hush_sigma_ev` | σ = sqrt(2·λ·k_B·T) in eV |
+| `Calibration` | Pydantic model for the calibration block |
+| `load_calibration` | Parse a TOML calibration file |
+| `apply_calibration` | Apply a calibration to a list of excited states |
+| `build_run_manifest` | Assemble a provenance manifest dict |
+| `write_run_manifest` | Write `run_manifest.json` to disk |
+| `__version__` | Installed package version string |
+
+---
 
 All settings are read via `pydantic-settings` with the `GAUSS_` prefix;
 a `.env` file in the working directory is honoured.
@@ -732,7 +951,7 @@ CLI flags override environment variables when both are supplied.
 
 ---
 
-## 11. Troubleshooting
+## 12. Troubleshooting
 
 **No output generated**
 Inspect `output/tables/skipped_inputs.*` first and re-run with
@@ -757,9 +976,18 @@ Check that the molecule's λ_max falls within the LED emission band.
 `shape_overlap` is often more informative than `absorbed_fraction` for
 narrow-band relative sources.
 
+**`run_manifest.json` is missing**
+The manifest is written by `analyze`. It will not be present for runs
+that were aborted before completion. Re-run the pipeline to produce it.
+
+**`git_commit` is `null` in `run_manifest.json`**
+The package was installed from a wheel or archive rather than from a
+git checkout, so no commit SHA is available. The `software_version`
+field still identifies the release.
+
 ---
 
-## 12. Citation and License
+## 13. Citation and License
 
 If you use `overlap-calculator` in published work, please cite the
 concept DOI below. It resolves to the latest archived release on

@@ -1,6 +1,6 @@
 [project]
 name = "overlap-calculator"
-version = "1.0.0"
+version = "1.1.0"
 description = "Batch spectral-overlap analysis between TD-DFT / experimental absorption and reference light sources (AM1.5G, CIE LED/FL)."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"

@@ -7,9 +7,10 @@
 %      pdflatex MANUAL.tex      % second pass for TOC / refs
 % --------------------------------------------------------------------
 
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
+\usepackage{fontspec}
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont{Latin Modern Mono}
 \usepackage[a4paper,margin=2.5cm]{geometry}
 \usepackage{microtype}
 \usepackage{amsmath}
@@ -97,7 +98,7 @@
   \Huge\bfseries overlap-calculator\\[4pt]
   \Large\mdseries User Manual}
 \author{Pınar Seyitdanlıoğlu}
-\date{Version 1.0.0 \quad\textbullet\quad 2026-05-01}
+\date{Version 1.1.0 \quad\textbullet\quad 2026-06-05}
 
 % ====================================================================
 \begin{document}
@@ -283,7 +284,7 @@ with three subcommands.
 overlap-calculator generate-input --files-dir PATH [--out PATH] [--log-level LEVEL] [--log-format FORMAT]
 \end{lstlisting}
 
-\begin{longtable}{@{}p{3.4cm}p{3.6cm}p{8.6cm}@{}}
+\begin{longtable}{@{}p{3.4cm}p{3.6cm}p{7.7cm}@{}}
 \toprule
 \textbf{Flag} & \textbf{Default} & \textbf{Description} \\
 \midrule
@@ -298,10 +299,10 @@ overlap-calculator generate-input --files-dir PATH [--out PATH] [--log-level LEV
 \subsection{\texttt{analyze}}
 
 \begin{lstlisting}[language=bash]
-overlap-calculator analyze --input PATH [--out PATH] [--sigma-ev FLOAT] [--wl-min FLOAT] [--wl-max FLOAT] [--num-points INT] [--concentration-m FLOAT] [--path-cm FLOAT] [--default-light-sources STR] [--light-source-file PATH]... [--plot-outputs / --no-plot-outputs] [--plot-dpi INT] [--ranking-outputs / --no-ranking-outputs] [--log-level LEVEL] [--log-format FORMAT]
+overlap-calculator analyze --input PATH [--out PATH] [--sigma-ev FLOAT] [--wl-min FLOAT] [--wl-max FLOAT] [--num-points INT] [--concentration-m FLOAT] [--path-cm FLOAT] [--prefactor-mode {constant,frequency-resolved}] [--sigma-mode {fixed,marcus-hush}] [--reorganization-ev FLOAT] [--temperature-k FLOAT] [--calibration PATH] [--default-light-sources STR] [--light-source-file PATH]... [--plot-outputs / --no-plot-outputs] [--plot-dpi INT] [--ranking-outputs / --no-ranking-outputs] [--log-level LEVEL] [--log-format FORMAT]
 \end{lstlisting}
 
-\begin{longtable}{@{}>{\RaggedRight}p{5.0cm}>{\RaggedRight}p{3.8cm}>{\RaggedRight}p{6.8cm}@{}}
+\begin{longtable}{@{}>{\RaggedRight}p{5.0cm}>{\RaggedRight}p{3.6cm}>{\RaggedRight}p{6.1cm}@{}}
 \toprule
 \textbf{Flag} & \textbf{Default} & \textbf{Description} \\
 \midrule
@@ -314,6 +315,11 @@ overlap-calculator analyze --input PATH [--out PATH] [--sigma-ev FLOAT] [--wl-mi
 \idtt{-{}-num-points}            & \(10000\)                         & Number of grid points \\
 \idtt{-{}-concentration-m}       & \(1\text{e-}5\)                   & Beer--Lambert reference concentration, mol\,L\(^{-1}\) \\
 \idtt{-{}-path-cm}               & \(1.0\)                           & Beer--Lambert reference path length, cm \\
+\idtt{-{}-prefactor-mode}        & \texttt{constant}                 & \texttt{constant} (integrated intensity; default) or \texttt{frequency-resolved} (keeps the wavenumber factor inside the integrand; relevant for NIR bands). See \S\ref{sec:prefactor}. \\
+\idtt{-{}-sigma-mode}            & \texttt{fixed}                    & \texttt{fixed} (use \idtt{-{}-sigma-ev}) or \texttt{marcus-hush} (\(\sigma=\sqrt{2\lambda k_B T}\) from \idtt{-{}-reorganization-ev} and \idtt{-{}-temperature-k}). See \S\ref{sec:prefactor}. \\
+\idtt{-{}-reorganization-ev}     & \(0.30\)                          & Reorganization energy \(\lambda\), eV; used when \texttt{-{}-sigma-mode marcus-hush} \\
+\idtt{-{}-temperature-k}         & \(298.15\)                        & Temperature in K for the Marcus--Hush width \\
+\idtt{-{}-calibration}           & \emph{none}                       & Optional TOML calibration file (CLI and library only). See \S\ref{sec:calibration}. \\
 \idtt{-{}-default-light-sources} & \texttt{AM15G,LEDB4,\ldots}       & Comma-separated bundled-source list \\
 \idtt{-{}-light-source-file}     & \emph{none}                       & Repeatable path to a custom light-source CSV \\
 \idtt{-{}-plot-outputs}          & on                                & Emit TIFF plots (\idtt{-{}-no-plot-outputs} to disable) \\
@@ -356,7 +362,7 @@ POST & \texttt{/analyze} & Multipart upload; returns a ZIP of results \\
 
 \noindent \texttt{POST /analyze} accepts the following form fields:
 
-\begin{longtable}{@{}>{\RaggedRight}p{5.0cm}>{\RaggedRight}p{3.0cm}>{\RaggedRight}p{7.6cm}@{}}
+\begin{longtable}{@{}>{\RaggedRight}p{5.0cm}>{\RaggedRight}p{3.0cm}>{\RaggedRight}p{6.7cm}@{}}
 \toprule
 \textbf{Form field} & \textbf{Type} & \textbf{Description} \\
 \midrule
@@ -369,6 +375,10 @@ POST & \texttt{/analyze} & Multipart upload; returns a ZIP of results \\
 \idtt{num\_points}            & int (opt.)             & Grid size (default \(10000\)) \\
 \idtt{concentration\_m}       & float (opt.)           & Beer--Lambert reference concentration (default \(1\text{e-}5\)) \\
 \idtt{path\_cm}               & float (opt.)           & Beer--Lambert reference path length (default \(1.0\)) \\
+\idtt{prefactor\_mode}        & str (opt.)             & \texttt{constant} (default) or \texttt{frequency-resolved} \\
+\idtt{sigma\_mode}            & str (opt.)             & \texttt{fixed} (default) or \texttt{marcus-hush} \\
+\idtt{reorganization\_ev}     & float (opt.)           & Reorganization energy \(\lambda\), eV; used when \texttt{sigma\_mode=marcus-hush} (default \(0.30\)) \\
+\idtt{temperature\_k}         & float (opt.)           & Temperature in K for the Marcus--Hush width (default \(298.15\)) \\
 \idtt{default\_light\_sources}& str (opt.)             & Comma-separated bundled-source list \\
 \idtt{plot\_outputs}          & bool (opt.)            & Enable / disable plot generation \\
 \idtt{plot\_dpi}              & int (opt.)             & TIFF plot resolution (default \(400\); use \(600\) for larger exports) \\
@@ -423,7 +433,7 @@ Both are first-class: a single manifest can mix them freely, and the
 pipeline produces identical downstream columns, plots, and overlap
 metrics.
 
-\begin{longtable}{@{}>{\RaggedRight}p{2.6cm}>{\RaggedRight}p{2.8cm}>{\RaggedRight}p{4.2cm}>{\RaggedRight}p{5.4cm}@{}}
+\begin{longtable}{@{}>{\RaggedRight}p{2.6cm}>{\RaggedRight}p{2.8cm}>{\RaggedRight}p{4.2cm}>{\RaggedRight}p{4.7cm}@{}}
 \toprule
 \textbf{Family} & \textbf{Extensions} & \textbf{Parser} & \textbf{Notes} \\
 \midrule
@@ -458,7 +468,7 @@ Experimental & \texttt{.xlsx}, \texttt{.xls}          & \texttt{pandas.read\_exc
 ]
 \end{lstlisting}
 
-\begin{longtable}{@{}p{2.8cm}p{1.6cm}p{11cm}@{}}
+\begin{longtable}{@{}p{2.8cm}p{1.6cm}p{10.15cm}@{}}
 \toprule
 \textbf{Field} & \textbf{Req?} & \textbf{Description} \\
 \midrule
@@ -542,7 +552,7 @@ specific sheet, edit the generated manifest entry or author it by hand:
 \begin{itemize}
   \item Exactly one wavelength column; accepted aliases
         (case-insensitive): \texttt{wavelength},
-        \texttt{wavelength\_nm}, \texttt{lambda}, \texttt{wl},
+        \idtt{wavelength\_nm}, \texttt{lambda}, \texttt{wl},
         \texttt{nm}. If no named wavelength column is found, the first
         numeric column is used.
   \item One or more numeric signal columns. Each signal is interpreted
@@ -565,21 +575,22 @@ and a single numeric intensity column. The filename stem becomes the
 
 \begin{lstlisting}
 output/
+|-- run_manifest.json                                          % provenance record
 |-- tables/
 |   |-- results.{csv,json,xlsx}
 |   |-- results_timings.{csv,json,xlsx}
 |   |-- descriptor_summary.{csv,xlsx}
-|   |-- ranking_by_light_source__<metric>.{csv,json,xlsx}    # 4 metric variants
-|   |-- ranking_by_sample__<metric>.{csv,json,xlsx}           # 4 metric variants
-|   `-- skipped_inputs.{csv,json}           # emitted only if any inputs were skipped
+|   |-- ranking_by_light_source__<metric>.{csv,json,xlsx}    % 4 metric variants
+|   |-- ranking_by_sample__<metric>.{csv,json,xlsx}           % 4 metric variants
+|   `-- skipped_inputs.{csv,json}           % emitted only if any inputs were skipped
 `-- plots/
     |-- absorption/<sample>__{absolute,normalized}.tiff
     |-- light_source/<light>.tiff
     |-- overlap/<sample>__<light>__combined__{absolute,normalized}.tiff
     |-- overlap/<sample>__<light>__<method>__{absolute,normalized}.tiff
     |-- overlays/absorptance_overlay__<method>__{absolute,normalized}.tiff
-    |-- ranking/by_light_source/<metric>/<light>.tiff         # bar chart per light source
-    `-- ranking/by_sample/<metric>/<sample>.tiff              # bar chart per sample
+    |-- ranking/by_light_source/<metric>/<light>.tiff         % bar chart per light source
+    `-- ranking/by_sample/<metric>/<sample>.tiff              % bar chart per sample
 \end{lstlisting}
 
 \noindent \texttt{<metric>} cycles through the four overlap descriptors:
@@ -611,6 +622,9 @@ Shared columns:
 \idtt{absorbed\_flux\_unit}            & Unit of the absorbed-flux integral \\
 \idtt{td\_method\_basis}               & Route metadata from the TD-DFT file (null for experimental) \\
 \idtt{td\_solvent}                     & PCM solvent from the TD-DFT file (null for experimental) \\
+\idtt{prefactor\_mode}                 & \texttt{constant} or \texttt{frequency-resolved} --- the prefactor convention used for this row \\
+\idtt{sigma\_mode}                     & \texttt{fixed} or \texttt{marcus-hush} --- the width-source used for this row \\
+\idtt{software\_version}               & Package version string at run time \\
 \bottomrule
 \end{longtable}
 
@@ -677,11 +691,11 @@ that arise from a multi-sample, multi-light-source run:
 \end{longtable}
 
 \noindent Both interpretations are reported because they answer
-different scientific questions: \texttt{absorbed\_fraction} tracks the
+different scientific questions: \idtt{absorbed\_fraction} tracks the
 fraction of incident photons that are actually absorbed under the
 chosen Beer--Lambert reference \((c, L)\) and is the right figure of
 merit for photocatalysis, photovoltaic action, or photo-excitation
-yield; \texttt{shape\_overlap} is a brightness-independent spectral
+yield; \idtt{shape\_overlap} is a brightness-independent spectral
 matching score, appropriate when comparing differently-scaled
 illuminants on equal footing (\S\ref{sec:metric-choice}).
 
@@ -705,16 +719,15 @@ was skipped (\texttt{INPUT\_SKIPPED} / \texttt{INPUT\_ERROR} /
 \texttt{ANALYSIS\_ERROR}) followed by the error message.
 
 \subsection{\texttt{results\_timings.*}}
-One row per \texttt{(sample\_id, light\_source\_name)} pair. Shared
-columns: \texttt{source\_type}, \texttt{sample\_id},
-\texttt{light\_source\_name}, \texttt{plot\_ms}. Each broadening method
-contributes a five-column block (\texttt{gaussian\_parse\_tddft\_ms},
-\texttt{gaussian\_broadening\_ms}, \texttt{gaussian\_light\_source\_ms},
-\texttt{gaussian\_integrals\_ms}, \texttt{gaussian\_total\_sample\_ms},
-and the matching \texttt{lorentzian\_*} quintuplet). The row ends with
-\texttt{total\_pair\_ms} (sum of both methods' \texttt{total\_sample\_ms})
-and \texttt{total\_with\_plot\_ms} (\texttt{total\_pair\_ms +
-plot\_ms}).
+One row per \idtt{(sample\_id, light\_source\_name)} pair. Shared
+columns: \idtt{source\_type}, \idtt{sample\_id},
+\idtt{light\_source\_name}, \idtt{plot\_ms}. Each broadening method
+contributes a five-column block (\idtt{gaussian\_parse\_tddft\_ms},
+\idtt{gaussian\_broadening\_ms}, \idtt{gaussian\_light\_source\_ms},
+\idtt{gaussian\_integrals\_ms}, \idtt{gaussian\_total\_sample\_ms},
+and the matching \idtt{lorentzian\_*} quintuplet). The row ends with
+\idtt{total\_pair\_ms} (sum of both methods' \idtt{total\_sample\_ms})
+and \idtt{total\_with\_plot\_ms} (\idtt{total\_pair\_ms + plot\_ms}).
 
 \subsection{Plots}
 TIFF plots are emitted at 400\,dpi by default and include both absolute
@@ -745,11 +758,53 @@ In the normalised panel the shaded region is exactly the integrand of
 report the same quantity: the area bounded above by the lower of the
 two curves at every wavelength.
 
+\subsection{\texttt{run\_manifest.json}}
+\label{sec:manifest}
+
+Every \texttt{analyze} run writes \texttt{run\_manifest.json} directly
+inside the output root directory (at the same level as \texttt{tables/}
+and \texttt{plots/}). The file records enough information to trace any
+result back to its exact inputs and parameters.
+
+\noindent Top-level fields:
+
+\begin{longtable}{@{}>{\RaggedRight}p{4.4cm}>{\RaggedRight}p{11.0cm}@{}}
+\toprule
+\textbf{Field} & \textbf{Description} \\
+\midrule
+\endhead
+\idtt{software\_version}   & Installed package version string \\
+\idtt{git\_commit}         & Full git SHA of the running commit; \texttt{null} if unavailable \\
+\idtt{generated\_at\_utc}  & ISO-8601 UTC timestamp of the run \\
+\idtt{parameters}          & Full resolved runtime parameter set: \texttt{sigma\_ev}, \texttt{prefactor\_mode}, \texttt{sigma\_mode}, \texttt{reorganization\_ev}, \texttt{temperature\_k}, wavelength grid, Beer--Lambert constants, light-source lists, and the full calibration block when \texttt{-{}-calibration} was supplied \\
+\idtt{light\_sources}      & Sorted list of light-source names used in the run \\
+\idtt{inputs}              & Array --- one object per source file (see below) \\
+\idtt{results\_count}      & Number of \texttt{RunResult} rows produced \\
+\idtt{skipped\_count}      & Number of inputs that were skipped \\
+\bottomrule
+\end{longtable}
+
+\noindent Each element of \texttt{inputs}:
+
+\begin{longtable}{@{}>{\RaggedRight}p{3.4cm}>{\RaggedRight}p{12.0cm}@{}}
+\toprule
+\textbf{Field} & \textbf{Description} \\
+\midrule
+\endhead
+\idtt{sample\_id}    & Sample identifier from the manifest \\
+\idtt{input\_type}   & \texttt{"theoretical"} or \texttt{"experimental"} \\
+\idtt{source\_path}  & Run-directory-relative path to the source file (never an absolute machine path); content fingerprinted by \idtt{sha256} \\
+\idtt{series\_name}  & Series column name (experimental inputs only; otherwise \texttt{null}) \\
+\idtt{sheet\_name}   & Sheet name for Excel inputs with an explicit sheet override; otherwise \texttt{null} \\
+\idtt{sha256}        & SHA-256 hex digest of the file contents at run time; \texttt{null} if the file was not readable \\
+\bottomrule
+\end{longtable}
+
 % ====================================================================
 \section{Bundled Light Sources}
 \label{sec:lightsources}
 
-\begin{longtable}{@{}p{2cm}p{8cm}p{5.2cm}@{}}
+\begin{longtable}{@{}p{2cm}p{8cm}p{4.35cm}@{}}
 \toprule
 \textbf{Name} & \textbf{Source} & \textbf{Unit} \\
 \midrule
@@ -901,6 +956,192 @@ An input is diverted to \texttt{skipped\_inputs.*} when
         \idtt{ANALYSIS\_ERROR: Failed to parse \ldots}).
 \end{itemize}
 
+\subsection{Choice of prefactor and broadening width}
+\label{sec:prefactor}
+
+\subsubsection*{Prefactor modes}
+
+The oscillator-strength prefactor
+\(P = 2.315 \times 10^8\,\text{M}^{-1}\,\text{cm}^{-2}\) comes from
+the Hilborn/Mulliken oscillator-strength relation: the integrated band
+area equals \(P \cdot f\).
+
+\paragraph{Constant prefactor (\texttt{-{}-prefactor-mode constant}, default).}
+\begin{equation}
+\varepsilon(\nu) = \sum_i P f_i\, g_i(\nu - \nu_i)
+\end{equation}
+where \(g_i\) is a normalized lineshape. The band area equals
+\(P f_i\) independent of \(\nu_i\). This is the validated convention
+for the 200--800\,nm visible range.
+
+\paragraph{Frequency-resolved prefactor (\texttt{-{}-prefactor-mode frequency-resolved}).}
+\begin{equation}
+\varepsilon(\nu) = \sum_i P f_i \frac{\nu}{\nu_i}\, g_i(\nu - \nu_i)
+\end{equation}
+The integrated band area is unchanged for a symmetric lineshape. The two
+modes differ only in peak height (by approximately
+\(+\tfrac{1}{2}(\sigma/\nu_i)^2\)) and in a small blue-shift of the peak,
+of order \(O((\sigma/\nu_i)^2)\). This difference is below \(\sim\)2\,\%
+over 200--800\,nm for \(\sigma = 0.30\)\,eV, and grows into the NIR.
+
+\textbf{Recommendation:} use \texttt{constant} for the validated visible
+range; use \texttt{frequency-resolved} for NIR bands.
+
+\subsubsection*{Lineshape definitions}
+
+Gaussian:
+\begin{equation}
+g(x) = \frac{1}{\sigma_{\text{cm}}\sqrt{2\pi}}\,
+        \exp\!\Bigl(-\frac{x^2}{2\sigma_{\text{cm}}^2}\Bigr),
+\qquad \sigma_{\text{cm}} = \sigma_{\text{eV}} \times 8065.5439\;\text{cm}^{-1}.
+\end{equation}
+
+Lorentzian (FWHM-matched to the Gaussian):
+\begin{equation}
+l(x) = \frac{\gamma/\pi}{x^2 + \gamma^2},\qquad
+\gamma = \sigma_{\text{cm}}\,\sqrt{2\ln 2}.
+\end{equation}
+
+\subsubsection*{Marcus--Hush width}
+
+The classical high-temperature Marcus absorption band is a Gaussian in
+energy whose variance is \(2\lambda k_B T\), giving
+\begin{equation}
+\sigma_E = \sqrt{2\,\lambda\,k_B T}.
+\end{equation}
+With \(k_B T = 0.025693\)\,eV at 298.15\,K, for \(\lambda = 0.30\)\,eV:
+\(\sigma_E = 0.12416\)\,eV (FWHM \(= 0.29234\)\,eV).
+
+\medskip
+\noindent\textbf{Caveat.} This is the classical (high-temperature) limit.
+For organic vibrational baths (\(\sim\)1400\,cm\(^{-1}\)),
+\(\hbar\omega \gg k_B T\), so the Marcus--Hush width is a first-order
+estimate rather than a quantitative bandshape. For quantitative bandshape
+work, supply vibronic (Franck--Condon) spectra through the
+experimental/spreadsheet (CSV/XLSX) input branch. The tool is not locked
+to Gaussian broadening and processes any tabular absorption spectrum
+through the identical descriptor pipeline.
+
+\subsection{Calibration}
+\label{sec:calibration}
+
+A calibration block supplied via \texttt{-{}-calibration PATH} (CLI and
+library) is applied \emph{before} broadening and does not change the
+output path.
+
+The calibration performs three operations, all optional and independent:
+\begin{enumerate}
+  \item \textbf{Energy map} \(E_{\text{cal}} = aE + b\) (E and b in eV).
+        Wavelength is recomputed from the calibrated energy via
+        \(\lambda = 1239.841984\,\text{eV\,nm}\,/\,E_{\text{cal}}\) only
+        when the map is non-identity (i.e.\ when \(a \ne 1\) or
+        \(b \ne 0\)).
+  \item \textbf{Oscillator-strength scaling}
+        \(f_{\text{cal}} = \alpha f\).
+  \item \textbf{Per-band overrides}: optional per-transition
+        \texttt{sigma\_ev} or \texttt{reorganization\_ev} that take
+        precedence over the global values.
+\end{enumerate}
+
+\noindent Guards: \(\alpha > 0\) and every \(E_{\text{cal}} > 0\) are
+enforced. The identity calibration (\(a=1\), \(b=0\), \(\alpha=1\), no
+band overrides) produces output bit-identical to running without
+\texttt{-{}-calibration}.
+
+\paragraph{TOML schema.}
+\begin{lstlisting}
+[energy]
+a = 1.0
+b = 0.0
+
+[oscillator]
+alpha = 1.0
+
+[[band]]
+index = 1            # 1-based excited-state index
+sigma_ev = 0.25      # width override (eV)
+reorganization_ev = 0.40
+\end{lstlisting}
+
+All sections and all keys are optional. Omitted keys take their identity
+or default values.
+
+\medskip
+\noindent\textbf{Note.} \texttt{-{}-calibration} is available on the CLI
+and via the Python library. The HTTP API does not accept calibration files.
+
+% ====================================================================
+\section{Use as a Library}
+\label{sec:library}
+
+\texttt{overlap\_calculator} is installable as a Python package and
+exposes a fully typed public API. Every name below is importable directly
+from \texttt{overlap\_calculator}.
+
+\subsection*{Minimal snippet}
+
+\begin{lstlisting}[language=Python]
+from overlap_calculator import analyze
+from overlap_calculator.models import AnalysisInput
+
+items = [AnalysisInput(
+    input_type="theoretical",
+    source_path="tddft.out",
+    sample_id="dye-1",
+)]
+results, skipped = analyze(items, default_light_sources=["AM15G"])
+\end{lstlisting}
+
+\subsection*{\texttt{analyze} signature}
+
+\begin{lstlisting}[language=Python]
+analyze(
+    items: list[AnalysisInput],
+    *,
+    sigma_ev: float = 0.30,
+    wl_min: float = 200.0,
+    wl_max: float = 800.0,
+    num_points: int = 10000,
+    concentration_molar: float = 1e-5,
+    path_cm: float = 1.0,
+    default_light_sources: list[str] | None = None,
+    custom_light_source_paths: list[Path] | None = None,
+    prefactor_mode: str = "constant",
+    sigma_mode: str = "fixed",
+    reorganization_ev: float = 0.30,
+    temperature_k: float = 298.15,
+    calibration: Calibration | None = None,
+) -> tuple[list[RunResult], list[AnalysisSkip]]
+\end{lstlisting}
+
+\subsection*{Public API names}
+
+\begin{longtable}{@{}>{\RaggedRight}p{5.4cm}>{\RaggedRight}p{10.0cm}@{}}
+\toprule
+\textbf{Name} & \textbf{Purpose} \\
+\midrule
+\endhead
+\texttt{analyze}                & High-level entry point --- full pipeline \\
+\texttt{analyze\_inputs}        & Lower-level batch runner \\
+\texttt{export\_results}        & Write tables and plots from a \texttt{results} list \\
+\texttt{prepare\_output\_dir}   & Create the output directory tree \\
+\idtt{build\_extinction\_spectrum} & Reconstruct \(\varepsilon(\lambda)\) from TD-DFT excited states \\
+\texttt{compute\_absorbance}    & Beer--Lambert \(A(\lambda) = \varepsilon c L\) \\
+\texttt{compute\_absorptance}   & \(\alpha(\lambda) = 1 - 10^{-A}\) \\
+\texttt{shape\_overlap}         & Dimensionless spectral shape comparator \\
+\texttt{integrate\_light\_flux} & \(\int I(\lambda)\,d\lambda\) \\
+\idtt{integrate\_absorbed\_flux} & \(\int \alpha(\lambda)\,I(\lambda)\,d\lambda\) \\
+\texttt{load\_light\_sources}   & Load bundled and custom light sources \\
+\texttt{marcus\_hush\_sigma\_ev}& \(\sigma = \sqrt{2\lambda k_B T}\) in eV \\
+\texttt{Calibration}            & Pydantic model for the calibration block \\
+\texttt{load\_calibration}      & Parse a TOML calibration file \\
+\texttt{apply\_calibration}     & Apply a calibration to a list of excited states \\
+\idtt{build\_run\_manifest}     & Assemble a provenance manifest dict \\
+\idtt{write\_run\_manifest}     & Write \texttt{run\_manifest.json} to disk \\
+\texttt{\_\_version\_\_}        & Installed package version string \\
+\bottomrule
+\end{longtable}
+
 % ====================================================================
 \section{Configuration and Environment Variables}
 \label{sec:config}
@@ -909,7 +1150,7 @@ All settings are read via \texttt{pydantic-settings} with the
 \texttt{GAUSS\_} prefix; a \texttt{.env} file in the working directory
 is honoured.
 
-\begin{longtable}{@{}>{\RaggedRight}p{7.2cm}>{\RaggedRight}p{3.6cm}>{\RaggedRight}p{4.8cm}@{}}
+\begin{longtable}{@{}>{\RaggedRight}p{7.2cm}>{\RaggedRight}p{3.6cm}>{\RaggedRight}p{3.95cm}@{}}
 \toprule
 \textbf{Variable} & \textbf{Default} & \textbf{Purpose} \\
 \midrule
@@ -963,6 +1204,16 @@ supplied.
   Check that the dye's \(\lambda_\text{max}\) falls within the LED
   emission band. \texttt{shape\_overlap} is often more informative
   than \texttt{absorbed\_fraction} for narrow-band relative sources.
+
+  \item[\texttt{run\_manifest.json} is missing]
+  The manifest is written by \texttt{analyze}. It will not be present
+  for runs that were aborted before completion. Re-run the pipeline to
+  produce it.
+
+  \item[\texttt{git\_commit} is \texttt{null} in \texttt{run\_manifest.json}]
+  The package was installed from a wheel or archive rather than from a
+  git checkout, so no commit SHA is available. The
+  \texttt{software\_version} field still identifies the release.
 \end{description}
 
 % ====================================================================
@@ -1025,7 +1276,7 @@ DOI: \href{https://doi.org/10.25039/CIE.DS.54hy6srn}{10.25039/CIE.DS.54hy6srn}
 
 \begin{quote}
 CIE (2018). \emph{CIE 015:2018 Colorimetry, 4th Edition.}
-International Commission on Illumination, Vienna, AT.
+International Commission on Illumination, Vienna, AT.\\
 \url{https://cie.co.at/publications/colorimetry-4th-edition/}
 \end{quote}
 

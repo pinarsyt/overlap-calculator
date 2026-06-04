@@ -1,0 +1,10 @@
+[energy]
+a = 1.0    # multiplicative factor (identity — no energy scaling)
+b = 0.0    # additive shift in eV (identity — no energy shift)
+
+[oscillator]
+alpha = 1.0   # scaling factor for all oscillator strengths (identity)
+
+[[band]]
+index = 1           # 1-based excited-state index
+sigma_ev = 0.25     # width override in eV for the first excited state

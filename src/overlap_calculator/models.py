@@ -45,6 +45,9 @@ class RunResult(StrictBaseModel):
     light_source_unit: str
     broadening_method: str
     sigma_ev: float
+    prefactor_mode: str = "constant"
+    sigma_mode: str = "fixed"
+    software_version: str = ""
     reference_concentration_molar: float
     reference_path_cm: float
     light_source_name: str
