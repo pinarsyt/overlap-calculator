@@ -59,7 +59,10 @@ def main() -> int:
     OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
     cli_out = run_cli()
     print(f"[CLI] -> {cli_out}")
-    print("[API] SKIPPED — calibration is CLI/library-only; the HTTP API does not accept calibration files.")
+    print(
+        "[API] SKIPPED — calibration is CLI/library-only; "
+        "the HTTP API does not accept calibration files."
+    )
     return 0
 
 

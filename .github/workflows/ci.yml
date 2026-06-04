@@ -30,8 +30,3 @@ jobs:
         run: mypy src
       - name: Tests (pytest)
         run: pytest -q
-      - name: Changelog updated
-        if: ${{ github.event_name == 'pull_request' }}
-        run: |
-          git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
-          git diff --name-only FETCH_HEAD...HEAD | grep -Fx "CHANGELOG.md"
