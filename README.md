@@ -33,6 +33,16 @@ together with publication-grade TIFF plots.
   in the same run.
 - Side-by-side **Gaussian** and **Lorentzian** broadening for every TD-DFT
   input.
+- **Prefactor modes**: `constant` (default, validated for 200–800 nm) and
+  `frequency-resolved` (keeps the wavenumber factor inside the integrand;
+  relevant for NIR bands).
+- **Broadening width modes**: `fixed` (default, uniform `--sigma-ev`) and
+  `marcus-hush` (per-transition classical Marcus–Hush width
+  `σ = sqrt(2·λ·k_B·T)` from `--reorganization-ev` and `--temperature-k`).
+- **Calibration**: optional TOML block that applies a linear energy map
+  `E_cal = a·E + b`, an oscillator-strength scaling `f_cal = α·f`, and
+  per-band width overrides before broadening (`--calibration PATH`; CLI
+  and library only).
 - Bundled reference light sources: **AM1.5G** (NREL ASTM G-173) and
   **LEDB1**, **LEDB2**, **LEDB3**, **LEDB4**, **CIEFL10** from the CIE 015:2018
   reference illuminant data sets (International Commission on
@@ -45,6 +55,9 @@ together with publication-grade TIFF plots.
   integrals.
 - Per-row unit metadata (`absorption_unit`, `light_source_unit`,
   `absorbed_flux_unit`) so downstream pipelines know what each number means.
+- **Provenance**: every run writes `run_manifest.json` in the output root,
+  capturing software version, git commit, UTC timestamp, resolved
+  parameters, and SHA-256 of every input file.
 - Publication-ready TIFF plots per sample, per light source, and per
   (sample, light) pair, with the overlap region shaded.
 - **Ranking outputs**: grouped tables (`ranking_by_light_source__<metric>`,
@@ -54,6 +67,8 @@ together with publication-grade TIFF plots.
 - Structured CSV / JSON / XLSX exports including a descriptor summary and
   an explicit `skipped_inputs` report for any files that could not be
   analysed.
+- **Public Python API**: importable as a library — `from overlap_calculator
+  import analyze` — with a fully typed, stable public surface.
 - First-class CLI (Typer) and HTTP API (Flask) interfaces; reproducible
   environments via `pyproject.toml`, `environment.yml`, and Docker.
 
@@ -96,14 +111,62 @@ overlap-calculator analyze --input input/input.json --out output_600dpi --plot-d
 
 # Optional: skip the ranking tables and bar charts
 overlap-calculator analyze --input input/input.json --out output --no-ranking-outputs
+
+# Optional: frequency-resolved prefactor (relevant for NIR bands)
+overlap-calculator analyze --input input/input.json --out output --prefactor-mode frequency-resolved
+
+# Optional: Marcus-Hush broadening width
+overlap-calculator analyze --input input/input.json --out output --sigma-mode marcus-hush --reorganization-ev 0.30
+
+# Optional: apply a calibration TOML
+overlap-calculator analyze --input input/input.json --out output --calibration cal.toml
 ```
 
 Outputs land under `output/tables/` (CSV/JSON/XLSX, including
 `ranking_by_light_source__<metric>` and `ranking_by_sample__<metric>`
-for each of the four overlap metrics) and `output/plots/` (TIFF,
-400 dpi by default; ranking bar charts under `plots/ranking/`). See
+for each of the four overlap metrics), `output/plots/` (TIFF, 400 dpi
+by default; ranking bar charts under `plots/ranking/`), and
+`output/run_manifest.json` (provenance record). See
 [docs/MANUAL.md](docs/MANUAL.md) for the full command reference,
 input/output schema, and the derivations behind every metric.
+
+---
+
+## Use as a library
+
+`overlap_calculator` exposes a fully typed public API that lets you
+drive the same pipeline from Python without the CLI:
+
+```python
+from overlap_calculator import analyze
+from overlap_calculator.models import AnalysisInput
+
+items = [AnalysisInput(input_type="theoretical", source_path="tddft.out", sample_id="dye-1")]
+results, skipped = analyze(items, default_light_sources=["AM15G"])
+```
+
+Public names importable from `overlap_calculator`:
+
+| Name | Purpose |
+| ---- | ------- |
+| `analyze` | High-level entry point: full pipeline, returns `(list[RunResult], list[AnalysisSkip])` |
+| `analyze_inputs` | Lower-level batch runner |
+| `export_results` | Write tables and plots from a `results` list |
+| `prepare_output_dir` | Create the output directory tree |
+| `build_extinction_spectrum` | Reconstruct ε(λ) from TD-DFT excited states |
+| `compute_absorbance` | Beer–Lambert A(λ) = ε·c·L |
+| `compute_absorptance` | α(λ) = 1 − 10^(−A) |
+| `shape_overlap` | Dimensionless spectral shape comparator |
+| `integrate_light_flux` | ∫ I(λ) dλ |
+| `integrate_absorbed_flux` | ∫ α(λ)·I(λ) dλ |
+| `load_light_sources` | Load bundled and custom light sources |
+| `marcus_hush_sigma_ev` | σ = sqrt(2·λ·k_B·T) in eV |
+| `Calibration` | Pydantic model for the calibration block |
+| `load_calibration` | Parse a TOML calibration file |
+| `apply_calibration` | Apply a calibration to a list of excited states |
+| `build_run_manifest` | Assemble a provenance manifest dict |
+| `write_run_manifest` | Write `run_manifest.json` to disk |
+| `__version__` | Installed package version string |
 
 ---
 

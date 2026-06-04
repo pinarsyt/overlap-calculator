@@ -1,10 +1,10 @@
 # overlap-calculator Case Studies
 
-This directory contains 11 worked case studies, each isolating one
-**user-selectable feature** of `overlap-calculator`. Every case study
-ships in three documentation formats — Markdown, LaTeX source, and a
-typeset PDF — so the same content is browsable on GitHub, editable as
-LaTeX, and printable as a stand-alone PDF.
+This directory contains 15 worked case studies, each isolating one
+**user-selectable feature** of `overlap-calculator`. Case studies 01–11
+ship in three documentation formats — Markdown, LaTeX source, and a
+typeset PDF. Case studies 12–15 ship in Markdown and LaTeX source
+(PDFs are built separately).
 
 Each case study is intentionally small (**2 samples × 2 light
 sources**) so a full run finishes in seconds and the repository stays
@@ -63,6 +63,10 @@ links to instead of repeating.
 | 09 | [`09_beer_lambert_tuning`](09_beer_lambert_tuning/README.md) | `--concentration-m` and `--path-cm` | 2 `.out` | [tex](09_beer_lambert_tuning/README.tex) | [pdf](09_beer_lambert_tuning/README.pdf) |
 | 10 | [`10_wavelength_grid`](10_wavelength_grid/README.md) | `--wl-min` / `--wl-max` / `--num-points` | 2 `.out` | [tex](10_wavelength_grid/README.tex) | [pdf](10_wavelength_grid/README.pdf) |
 | 11 | [`11_sheet_overrides`](11_sheet_overrides/README.md) | `sheet_name` (CLI) / `sheet_overrides` (API) | 2 series in 1 `.xlsx` | [tex](11_sheet_overrides/README.tex) | [pdf](11_sheet_overrides/README.pdf) |
+| 12 | [`12_frequency_resolved_prefactor`](12_frequency_resolved_prefactor/README.md) | `--prefactor-mode frequency-resolved` | 2 `.out` | [tex](12_frequency_resolved_prefactor/README.tex) | — |
+| 13 | [`13_marcus_hush_width`](13_marcus_hush_width/README.md) | `--sigma-mode marcus-hush` + `--reorganization-ev` | 2 `.out` | [tex](13_marcus_hush_width/README.tex) | — |
+| 14 | [`14_calibration_block`](14_calibration_block/README.md) | `--calibration PATH` (TOML; CLI/library only) | 2 `.out` | [tex](14_calibration_block/README.tex) | — |
+| 15 | [`15_vibronic_tabular_branch`](15_vibronic_tabular_branch/README.md) | Vibronic/Franck–Condon spectra via experimental branch | 2 series in 1 `.xlsx` | [tex](15_vibronic_tabular_branch/README.tex) | — |
 
 ---
 

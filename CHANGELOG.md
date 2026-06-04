@@ -5,6 +5,62 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to
 Semantic Versioning.
 
+## 1.1.0 - 2026-06-05
+
+### Added
+
+- **Frequency-resolved prefactor mode.** The new `--prefactor-mode
+  frequency-resolved` flag (CLI) / `prefactor_mode` parameter (library)
+  keeps the wavenumber factor inside the integrand,
+  `ε(ν) = Σ P fᵢ (ν/νᵢ) gᵢ(ν − νᵢ)`, rather than using the default
+  integrated-intensity convention. The two modes differ in peak height and
+  position by O((σ/νᵢ)²), below ~2 % over 200–800 nm, and grow into the
+  NIR. Use `constant` (default) for the validated visible range; use
+  `frequency-resolved` for NIR bands.
+
+- **Marcus–Hush broadening width.** The new `--sigma-mode marcus-hush`
+  flag pairs with `--reorganization-ev FLOAT` and `--temperature-k FLOAT`
+  to derive a classical high-temperature Marcus–Hush Gaussian width
+  `σ = sqrt(2·λ·k_B·T)` per transition. At λ = 0.30 eV, T = 298.15 K this
+  yields σ = 0.12416 eV (FWHM 0.29234 eV). This is the classical
+  high-temperature limit; for organic vibrational baths where
+  ℏω >> k_B·T it is a first-order estimate.
+
+- **Calibration block.** A TOML file supplied via `--calibration PATH`
+  (CLI and library) applies a linear energy map `E_cal = a·E + b`,
+  an oscillator-strength scaling `f_cal = α·f`, and optional per-band
+  sigma / reorganization-energy overrides before broadening. Wavelength
+  is recomputed from the calibrated energy via `λ = 1239.841984 / E_cal`
+  only when the energy map is non-identity. The identity calibration
+  (a=1, b=0, α=1, no band overrides) produces bit-identical output to
+  running without `--calibration`.
+
+- **Public Python API.** `overlap_calculator/__init__.py` now exports a
+  stable, typed public surface: `analyze`, `analyze_inputs`,
+  `export_results`, `prepare_output_dir`, `build_extinction_spectrum`,
+  `compute_absorbance`, `compute_absorptance`, `shape_overlap`,
+  `integrate_light_flux`, `integrate_absorbed_flux`, `load_light_sources`,
+  `marcus_hush_sigma_ev`, `Calibration`, `load_calibration`,
+  `apply_calibration`, `build_run_manifest`, `write_run_manifest`,
+  `__version__`.
+
+- **Run manifest provenance.** Every `analyze` run writes
+  `run_manifest.json` in the output root (alongside `tables/` and
+  `plots/`). Fields: `software_version`, `git_commit` (null when
+  unavailable), `generated_at_utc` (ISO-8601 UTC), `parameters` (the
+  full resolved runtime parameter set including the calibration block),
+  `light_sources`, `inputs` (one entry per source file with `sample_id`,
+  `input_type`, `source_path`, `series_name`, `sheet_name`, and SHA-256
+  of the file), `results_count`, `skipped_count`. Result table rows now
+  also carry `prefactor_mode`, `sigma_mode`, and `software_version`
+  columns.
+
+- **Four new case studies** (12–15) in `case_studies/`: frequency-resolved
+  prefactor, Marcus–Hush width, calibration block, and vibronic/tabular
+  input branch.
+
+---
+
 ## 1.0.0 - 2026-05-01
 
 Initial public release of `overlap-calculator`, a reproducible batch

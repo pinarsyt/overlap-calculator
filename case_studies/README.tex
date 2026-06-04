@@ -98,7 +98,7 @@
   \apptocmd{\@title}{\par {\large #1 \par}}{}{}
 }
 \makeatother
-\subtitle{Index of all 11 worked examples}
+\subtitle{Index of all 15 worked examples}
 \author{}
 \date{}
 
@@ -114,11 +114,11 @@
 \section{overlap-calculator Case
 Studies}\label{overlap-calculator-case-studies}}
 
-This directory contains 11 worked case studies, each isolating one
-\textbf{user-selectable feature} of \texttt{overlap-calculator}. Every
-case study ships in three documentation formats --- Markdown, LaTeX
-source, and a typeset PDF --- so the same content is browsable on
-GitHub, editable as LaTeX, and printable as a stand-alone PDF.
+This directory contains 15 worked case studies, each isolating one
+\textbf{user-selectable feature} of \texttt{overlap-calculator}. Case
+studies 01--11 ship in three documentation formats --- Markdown, LaTeX
+source, and a typeset PDF. Case studies 12--15 ship in Markdown and
+LaTeX source (PDFs are built separately).
 
 Each case study is intentionally small (\textbf{2 samples × 2 light
 sources}) so a full run finishes in seconds and the repository stays
@@ -168,7 +168,7 @@ If this is your first time using \texttt{overlap-calculator}, start with
 / environment / API-startup walkthrough that every other case study
 links to instead of repeating.
 
-\begin{longtable}[]{@{}llllcc@{}}
+\begin{longtable}[]{@{}c>{\raggedright\arraybackslash}p{6.7cm}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{2.0cm}cc@{}}
 \toprule
 Case & Folder & Feature exercised & Inputs & LaTeX & PDF \\
 \midrule
@@ -245,6 +245,29 @@ series in 1 \texttt{.xlsx} &
 \href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/11_sheet_overrides/README.tex}{tex}
 &
 \href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/11_sheet_overrides/README.pdf}{pdf} \\
+12 &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/12_frequency_resolved_prefactor/README.md}{\texttt{12\_frequency\_resolved\_prefactor}}
+& \texttt{-{}-prefactor-mode frequency-resolved} & 2 \texttt{.out} &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/12_frequency_resolved_prefactor/README.tex}{tex}
+& --- \\
+13 &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/13_marcus_hush_width/README.md}{\texttt{13\_marcus\_hush\_width}}
+& \texttt{-{}-sigma-mode marcus-hush} + \texttt{-{}-reorganization-ev} &
+2 \texttt{.out} &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/13_marcus_hush_width/README.tex}{tex}
+& --- \\
+14 &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/14_calibration_block/README.md}{\texttt{14\_calibration\_block}}
+& \texttt{-{}-calibration PATH} (TOML; CLI/library only) & 2
+\texttt{.out} &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/14_calibration_block/README.tex}{tex}
+& --- \\
+15 &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/15_vibronic_tabular_branch/README.md}{\texttt{15\_vibronic\_tabular\_branch}}
+& Vibronic/Franck--Condon spectra via experimental branch & 2 series
+in 1 \texttt{.xlsx} &
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/15_vibronic_tabular_branch/README.tex}{tex}
+& --- \\
 \bottomrule
 \end{longtable}
 

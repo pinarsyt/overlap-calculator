@@ -8,6 +8,7 @@ import click
 import typer
 
 from overlap_calculator import __version__
+from overlap_calculator.calculations.calibration import Calibration, load_calibration
 from overlap_calculator.config.settings import settings
 from overlap_calculator.exceptions import OverlapCalculatorError
 from overlap_calculator.models import AnalysisInput, AnalysisSkip
@@ -17,6 +18,7 @@ from overlap_calculator.services.input_generator import (
     generate_inputs_with_skips,
 )
 from overlap_calculator.services.input_loader import load_input_json
+from overlap_calculator.services.provenance import build_run_manifest, write_run_manifest
 from overlap_calculator.utils.logging import format_log, setup_logging
 
 
@@ -95,6 +97,52 @@ def analyze(
     path_cm: Annotated[
         float, typer.Option("--path-cm", help="Reference path length in cm for Beer-Lambert")
     ] = settings.reference_path_cm,
+    prefactor_mode: Annotated[
+        str,
+        typer.Option(
+            "--prefactor-mode",
+            help=(
+                "Oscillator-strength -> epsilon convention: 'constant' (integrated "
+                "intensity; default) or 'frequency-resolved' (keeps the wavenumber factor "
+                "inside the integrand; matters for NIR bands)"
+            ),
+        ),
+    ] = settings.prefactor_mode,
+    sigma_mode: Annotated[
+        str,
+        typer.Option(
+            "--sigma-mode",
+            help=(
+                "Broadening width source: 'fixed' (use --sigma-ev; default) or "
+                "'marcus-hush' (per-transition sigma = sqrt(2*lambda*kB*T) from "
+                "--reorganization-ev and --temperature-k)"
+            ),
+        ),
+    ] = settings.sigma_mode,
+    reorganization_ev: Annotated[
+        float,
+        typer.Option(
+            "--reorganization-ev",
+            help="Reorganization energy lambda in eV for --sigma-mode marcus-hush",
+        ),
+    ] = settings.reorganization_ev,
+    temperature_k: Annotated[
+        float,
+        typer.Option(
+            "--temperature-k",
+            help="Temperature in K for the Marcus-Hush width (default 298.15)",
+        ),
+    ] = settings.temperature_k,
+    calibration_file: Annotated[
+        Optional[Path],
+        typer.Option(
+            "--calibration",
+            help=(
+                "Optional TOML calibration: linear energy map E_cal=a*E+b, "
+                "oscillator scaling f_cal=alpha*f, and per-band width overrides"
+            ),
+        ),
+    ] = None,
     default_light_sources: Annotated[
         str,
         typer.Option(
@@ -142,6 +190,9 @@ def analyze(
         selected_defaults = [
             value.strip() for value in default_light_sources.split(",") if value.strip()
         ]
+        calibration: Calibration | None = (
+            load_calibration(calibration_file) if calibration_file is not None else None
+        )
         logger.info(
             format_log(
                 "analyze",
@@ -149,6 +200,11 @@ def analyze(
                 input=input_file,
                 out=out,
                 sigma_ev=sigma_ev,
+                prefactor_mode=prefactor_mode,
+                sigma_mode=sigma_mode,
+                reorganization_ev=reorganization_ev,
+                temperature_k=temperature_k,
+                calibration=str(calibration_file) if calibration_file else "none",
                 wl_min=wl_min,
                 wl_max=wl_max,
                 num_points=num_points,
@@ -174,6 +230,11 @@ def analyze(
             path_cm=path_cm,
             default_light_sources=selected_defaults,
             custom_light_source_paths=light_source_files,
+            prefactor_mode=prefactor_mode,
+            sigma_mode=sigma_mode,
+            reorganization_ev=reorganization_ev,
+            temperature_k=temperature_k,
+            calibration=calibration,
         )
         combined_skipped = [*skipped_scan, *skipped_items]
         export_results(
@@ -184,6 +245,28 @@ def analyze(
             plot_dpi=plot_dpi,
             make_rankings=ranking_outputs,
         )
+        manifest = build_run_manifest(
+            results=results,
+            items=items,
+            parameters={
+                "sigma_ev": sigma_ev,
+                "prefactor_mode": prefactor_mode,
+                "sigma_mode": sigma_mode,
+                "reorganization_ev": reorganization_ev,
+                "temperature_k": temperature_k,
+                "wavelength_min_nm": wl_min,
+                "wavelength_max_nm": wl_max,
+                "num_points": num_points,
+                "concentration_molar": concentration_m,
+                "path_cm": path_cm,
+                "default_light_sources": selected_defaults,
+                "custom_light_source_count": len(light_source_files),
+                "calibration": calibration.model_dump() if calibration else None,
+            },
+            skipped_items=combined_skipped,
+            light_source_names=sorted({result.light_source_name for result in results}),
+        )
+        write_run_manifest(out, manifest)
         if combined_skipped:
             logger.warning(
                 format_log(

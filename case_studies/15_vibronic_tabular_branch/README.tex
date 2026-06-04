@@ -1,0 +1,319 @@
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames*,x11names*}{xcolor}
+\documentclass[
+  11pt,
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp}
+\else
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath}
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{
+  \IfFileExists{parskip.sty}{
+    \usepackage{parskip}
+  }{
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{}
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={blue},
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same}
+\usepackage[margin=2cm]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+\newenvironment{Shaded}{}{}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc}
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em}
+\providecommand{\tightlist}{
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+\usepackage{fvextra}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,fontsize=\footnotesize,commandchars=\\\{\}}
+\RecustomVerbatimEnvironment{verbatim}{Verbatim}{breaklines,breakanywhere,fontsize=\footnotesize}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\setlist[itemize]{itemsep=2pt,parsep=2pt}
+\setlist[enumerate]{itemsep=2pt,parsep=2pt}
+\usepackage{etoolbox}
+\AtBeginEnvironment{longtable}{\footnotesize}
+\AtBeginEnvironment{tabular}{\footnotesize}
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{4pt}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\titleformat{\section}{\Large\bfseries}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{1.4em}{0.6em}
+\titlespacing*{\subsection}{0pt}{1.0em}{0.4em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em plus 0.1em minus 0.1em}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\nouppercase{\leftmark}}
+\fancyhead[R]{\thepage}
+\fancyfoot[C]{overlap-calculator case studies}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{14pt}
+\sloppy
+\ifLuaTeX
+  \usepackage{selnolig}
+\fi
+
+\title{Case Study 15 --- Vibronic Tabular Branch}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{Pre-computed bandshapes through the experimental input branch}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+{
+\hypersetup{linkcolor=}
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\hypertarget{case-study-15--vibronic-tabular-branch}{
+\section{Case Study 15 --- Vibronic Tabular
+Branch}\label{case-study-15--vibronic-tabular-branch}}
+
+Demonstrate that the tool is not locked to Gaussian broadening. A
+vibronic (Franck--Condon) or any other pre-computed absorption spectrum
+can be fed through the experimental/spreadsheet (CSV/XLSX) input branch
+and runs through the identical absorbed-flux, absorbed-fraction, and
+shape-overlap descriptor pipeline.
+
+The key insight: \texttt{overlap-calculator} treats every experimental
+tabular input as absorbance \(A(\lambda)\) directly and does not broaden
+it further. Any bandshape --- vibronic progression, empirical spectrum,
+or computationally generated Franck--Condon envelope --- is handled
+correctly, with no additional flags required.
+
+The user-selectable knob is: use \texttt{input\_type = "experimental"}
+in the manifest (or supply a CSV/XLSX to \texttt{generate-input}).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{what-you-will-produce}{
+\subsection{What you will produce}\label{what-you-will-produce}}
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule
+Folder & By & Contents \\
+\midrule
+\endhead
+\texttt{output/cli/tables/} & CLI & Result tables (CSV / JSON / XLSX) \\
+\texttt{output/cli/plots/} & CLI & TIFF plots per sample, light source,
+and (sample, light) pair \\
+\texttt{output/api/} & API & Same \texttt{tables/} and \texttt{plots/}
+tree, extracted from the ZIP \\
+\texttt{output/api/analysis\_outputs.zip} & API & Raw ZIP response \\
+\bottomrule
+\end{longtable}
+
+Light sources used: \textbf{AM1.5G + LED-B4}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{1-prerequisites}{
+\subsection{1. Prerequisites}\label{1-prerequisites}}
+
+If you have never run any case study before, follow
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/01_theoretical_only/README.md\#1-prerequisites}{Case
+Study 01 \S1 Prerequisites} once to install the package, the
+\texttt{requests} library, and either the Python or Docker option for
+the HTTP API.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{2-inputs}{
+\subsection{2. Inputs}\label{2-inputs}}
+
+This case study uses the same bundled experimental workbook as Case
+Studies 02, 03, and 11. The \texttt{input.json} selects 2 absorbance
+series from the PhotochemCAD-derived spreadsheet. Each series is a real
+UV/Vis absorption spectrum measured in solution --- it captures the true
+bandshape including any vibronic structure already resolved by the
+spectrometer.
+
+\textbf{Citation.} The bundled workbook is derived from M. Taniguchi \&
+J. S. Lindsey, \emph{Photochem. Photobiol.} \textbf{94} (2018)
+290--327. See the project
+\href{https://github.com/pinarsyt/overlap-calculator/blob/main/README.md\#acknowledgement-of-third-party-data}{README}
+for the full citation.
+
+\hypertarget{3-run-with-the-cli}{
+\subsection{3. Run with the CLI}\label{3-run-with-the-cli}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{overlap{-}calculator}\NormalTok{ analyze }\AttributeTok{{-}{-}input}\NormalTok{ case\_studies/15\_vibronic\_tabular\_branch/input.json }\AttributeTok{{-}{-}out}\NormalTok{ case\_studies/15\_vibronic\_tabular\_branch/output/cli }\AttributeTok{{-}{-}default{-}light{-}sources}\NormalTok{ AM15G,LEDB4 }\AttributeTok{{-}{-}plot{-}dpi}\NormalTok{ 400}
+\end{Highlighting}
+\end{Shaded}
+
+After the run the \texttt{source\_type} column in \texttt{results.*}
+reads \texttt{experimental} for every row, confirming that no broadening
+was applied.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{4-run-with-the-http-api}{
+\subsection{4. Run with the HTTP API}\label{4-run-with-the-http-api}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{curl} \AttributeTok{{-}X}\NormalTok{ POST http://localhost:8000/analyze }\AttributeTok{{-}F} \StringTok{"files=@input/files/organic\_uvvis\_photochemcad\_dataset.xlsx"} \AttributeTok{{-}F} \StringTok{"default\_light\_sources=AM15G,LEDB4"} \AttributeTok{{-}F} \StringTok{"plot\_dpi=400"} \AttributeTok{{-}{-}output}\NormalTok{ case\_studies/15\_vibronic\_tabular\_branch/output/api/analysis\_outputs.zip}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{5-drive-both-interfaces-from-one-python-script}{
+\subsection{5. Drive both interfaces from one Python
+script}\label{5-drive-both-interfaces-from-one-python-script}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{python}\NormalTok{ case\_studies/15\_vibronic\_tabular\_branch/submit.py}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{6-expected-output-layout}{
+\subsection{6. Expected output layout}\label{6-expected-output-layout}}
+
+\begin{verbatim}
+case_studies/15_vibronic_tabular_branch/output/
++-- cli/
+|   +-- run_manifest.json
+|   +-- tables/results.{csv,json,xlsx}        (2 series x 2 light sources = 4 rows)
+|   +-- tables/results_timings.{csv,json,xlsx}
+|   +-- tables/descriptor_summary.{csv,xlsx}
+|   +-- tables/ranking_by_light_source__<metric>.{csv,json,xlsx}
+|   +-- tables/ranking_by_sample__<metric>.{csv,json,xlsx}
+|   +-- plots/
++-- api/
+    +-- analysis_outputs.zip
+    +-- tables/...
+    +-- plots/...
+\end{verbatim}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{7-what-this-demonstrates}{
+\subsection{7. What this demonstrates}\label{7-what-this-demonstrates}}
+
+\begin{itemize}
+\tightlist
+\item
+  The absorbed-flux, absorbed-fraction, and shape-overlap descriptor
+  pipeline is identical for theoretical and experimental inputs. The
+  only difference is that experimental inputs skip the broadening step.
+\item
+  A vibronic spectrum stored in a CSV or XLSX file (wavelength column
+  + absorbance column) is all that is needed. No extra flags are
+  required.
+\item
+  The \texttt{shape\_overlap} metric in particular is
+  broadening-agnostic: it compares the max-normalised shape of the
+  supplied spectrum against the max-normalised light-source spectrum
+  regardless of how the absorption bandshape was generated.
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{8-related-case-studies}{
+\subsection{8. Related case studies}\label{8-related-case-studies}}
+
+\begin{itemize}
+\tightlist
+\item
+  \href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/02_experimental_only/README.md}{Case
+  Study 02 --- Experimental Only}
+\item
+  \href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/03_mixed_theory_experiment/README.md}{Case
+  Study 03 --- Mixed Theory + Experiment}
+\item
+  \href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/13_marcus_hush_width/README.md}{Case
+  Study 13 --- Marcus--Hush Width}
+\item
+  \href{https://github.com/pinarsyt/overlap-calculator/blob/main/case_studies/14_calibration_block/README.md}{Case
+  Study 14 --- Calibration Block}
+\end{itemize}
+
+\end{document}

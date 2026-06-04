@@ -3,12 +3,20 @@ from __future__ import annotations
 import logging
 import re
 import time
+from collections.abc import Mapping
 from pathlib import Path
 
 import numpy as np
 from numpy.typing import NDArray
 
+from overlap_calculator import __version__
+from overlap_calculator.calculations.calibration import (
+    BandOverride,
+    Calibration,
+    apply_calibration,
+)
 from overlap_calculator.calculations.spectrum import (
+    DEFAULT_TEMPERATURE_K,
     REFERENCE_CONCENTRATION_MOLAR,
     REFERENCE_PATH_CM,
     build_extinction_spectrum,
@@ -19,11 +27,20 @@ from overlap_calculator.calculations.spectrum import (
     integrate_absorbed_flux,
     integrate_light_flux,
     load_light_sources,
+    marcus_hush_sigma_ev,
     resample_light_source_to_grid,
     shape_overlap,
+    validate_prefactor_mode,
+    validate_sigma_mode,
 )
 from overlap_calculator.exceptions import AnalysisError, ParseError
-from overlap_calculator.models import AnalysisInput, AnalysisSkip, RunResult, TDResult
+from overlap_calculator.models import (
+    AnalysisInput,
+    AnalysisSkip,
+    ExcitedState,
+    RunResult,
+    TDResult,
+)
 from overlap_calculator.parsers.experimental import load_experimental_series
 from overlap_calculator.parsers.td import extract_chk_name, parse_td_output
 from overlap_calculator.services.export import (
@@ -43,10 +60,42 @@ _THEORETICAL_ABSORPTION_UNIT = (
 _EXPERIMENTAL_ABSORPTION_UNIT = "absorbance proxy (user-provided signal, no Beer-Lambert)"
 
 __all__ = [
+    "analyze",
     "analyze_inputs",
     "export_results",
     "prepare_output_dir",
 ]
+
+
+def _resolve_per_state_sigma_ev(
+    states: list[ExcitedState],
+    sigma_mode: str,
+    sigma_ev: float,
+    reorganization_ev: float,
+    temperature_k: float,
+    overrides: Mapping[int, BandOverride],
+) -> list[float]:
+    """Per-transition Gaussian/Lorentzian sigma (eV) for the broadening kernel.
+
+    Priority per state: explicit per-band sigma override > Marcus-Hush sigma
+    (from a per-band or global reorganization energy) > the global fixed sigma.
+    """
+    sigmas: list[float] = []
+    for index, _state in enumerate(states, start=1):
+        override = overrides.get(index)
+        if override is not None and override.sigma_ev is not None:
+            sigmas.append(override.sigma_ev)
+            continue
+        if sigma_mode == "marcus-hush":
+            reorg = (
+                override.reorganization_ev
+                if override is not None and override.reorganization_ev is not None
+                else reorganization_ev
+            )
+            sigmas.append(marcus_hush_sigma_ev(reorg, temperature_k))
+        else:
+            sigmas.append(sigma_ev)
+    return sigmas
 
 
 def _looks_like_tddft_output(path: Path) -> bool:
@@ -69,6 +118,8 @@ def _build_theoretical_result(
     td: TDResult | None,
     broadening_method: str,
     sigma_ev: float,
+    prefactor_mode: str,
+    sigma_mode: str,
     light_source_name: str,
     wavelengths: NDArray[np.float64],
     epsilon: NDArray[np.float64],
@@ -104,6 +155,9 @@ def _build_theoretical_result(
         light_source_unit=get_light_source_unit(light_source_name),
         broadening_method=broadening_method,
         sigma_ev=sigma_ev,
+        prefactor_mode=prefactor_mode,
+        sigma_mode=sigma_mode,
+        software_version=__version__,
         reference_concentration_molar=concentration_molar,
         reference_path_cm=path_cm,
         light_source_name=light_source_name,
@@ -121,6 +175,8 @@ def _build_experimental_result(
     source_path: Path,
     broadening_method: str,
     sigma_ev: float,
+    prefactor_mode: str,
+    sigma_mode: str,
     light_source_name: str,
     wavelengths: NDArray[np.float64],
     absorbance: NDArray[np.float64],
@@ -152,6 +208,9 @@ def _build_experimental_result(
         light_source_unit=get_light_source_unit(light_source_name),
         broadening_method=broadening_method,
         sigma_ev=sigma_ev,
+        prefactor_mode=prefactor_mode,
+        sigma_mode=sigma_mode,
+        software_version=__version__,
         reference_concentration_molar=0.0,
         reference_path_cm=0.0,
         light_source_name=light_source_name,
@@ -172,6 +231,11 @@ def _analyze_theoretical_item(
     concentration_molar: float,
     path_cm: float,
     light_sources: dict[str, tuple[NDArray[np.float64], NDArray[np.float64]]],
+    prefactor_mode: str,
+    sigma_mode: str,
+    reorganization_ev: float,
+    temperature_k: float,
+    calibration: Calibration | None,
 ) -> tuple[list[RunResult], AnalysisSkip | None]:
     source_path = Path(item.source_path)
     sample_id = item.sample_id or extract_chk_name(source_path) or source_path.stem
@@ -198,16 +262,32 @@ def _analyze_theoretical_item(
             ),
         )
 
+    states = apply_calibration(td.excited_states, calibration) if calibration else td.excited_states
+    overrides = calibration.overrides_by_index() if calibration else {}
+    per_state_sigma_ev = _resolve_per_state_sigma_ev(
+        states,
+        sigma_mode=sigma_mode,
+        sigma_ev=sigma_ev,
+        reorganization_ev=reorganization_ev,
+        temperature_k=temperature_k,
+        overrides=overrides,
+    )
+    # Representative scalar for the result row: the first transition's width. Per-state
+    # widths may differ under marcus-hush + per-band overrides; sigma_mode flags that.
+    recorded_sigma_ev = per_state_sigma_ev[0] if per_state_sigma_ev else sigma_ev
+
     results: list[RunResult] = []
     for method in _METHODS:
         t_broadening = time.perf_counter()
         wavelengths, epsilon = build_extinction_spectrum(
-            td.excited_states,
+            states,
             method=method,
             sigma_ev=sigma_ev,
             wavelength_min_nm=wl_min,
             wavelength_max_nm=wl_max,
             num_points=num_points,
+            prefactor_mode=prefactor_mode,
+            per_state_sigma_ev=per_state_sigma_ev,
         )
         broadening_ms = (time.perf_counter() - t_broadening) * 1000.0
 
@@ -226,7 +306,9 @@ def _analyze_theoretical_item(
                 source_path=source_path,
                 td=td,
                 broadening_method=method,
-                sigma_ev=sigma_ev,
+                sigma_ev=recorded_sigma_ev,
+                prefactor_mode=prefactor_mode,
+                sigma_mode=sigma_mode,
                 light_source_name=light_name,
                 wavelengths=wavelengths,
                 epsilon=epsilon,
@@ -254,6 +336,8 @@ def _analyze_experimental_item(
     item: AnalysisInput,
     sigma_ev: float,
     light_sources: dict[str, tuple[NDArray[np.float64], NDArray[np.float64]]],
+    prefactor_mode: str,
+    sigma_mode: str,
 ) -> tuple[list[RunResult], AnalysisSkip | None]:
     source_path = Path(item.source_path)
     sample_id = item.sample_id or source_path.stem
@@ -296,6 +380,8 @@ def _analyze_experimental_item(
                 source_path=source_path,
                 broadening_method=method,
                 sigma_ev=sigma_ev,
+                prefactor_mode=prefactor_mode,
+                sigma_mode=sigma_mode,
                 light_source_name=light_name,
                 wavelengths=wavelengths,
                 absorbance=absorbance,
@@ -327,9 +413,17 @@ def analyze_inputs(
     path_cm: float = REFERENCE_PATH_CM,
     default_light_sources: list[str] | None = None,
     custom_light_source_paths: list[Path] | None = None,
+    prefactor_mode: str = "constant",
+    sigma_mode: str = "fixed",
+    reorganization_ev: float = 0.30,
+    temperature_k: float = DEFAULT_TEMPERATURE_K,
+    calibration: Calibration | None = None,
 ) -> tuple[list[RunResult], list[AnalysisSkip]]:
     if not items:
         raise AnalysisError("No analysis inputs provided.")
+
+    prefactor_mode = validate_prefactor_mode(prefactor_mode)
+    sigma_mode = validate_sigma_mode(sigma_mode)
 
     light_sources = load_light_sources(
         default_names=default_light_sources,
@@ -357,12 +451,19 @@ def analyze_inputs(
                 concentration_molar=concentration_molar,
                 path_cm=path_cm,
                 light_sources=light_sources,
+                prefactor_mode=prefactor_mode,
+                sigma_mode=sigma_mode,
+                reorganization_ev=reorganization_ev,
+                temperature_k=temperature_k,
+                calibration=calibration,
             )
         else:
             sample_results, skip = _analyze_experimental_item(
                 item,
                 sigma_ev=sigma_ev,
                 light_sources=light_sources,
+                prefactor_mode=prefactor_mode,
+                sigma_mode=sigma_mode,
             )
 
         if skip is not None:
@@ -398,3 +499,53 @@ def analyze_inputs(
         )
     )
     return results, skipped_items
+
+
+def analyze(
+    items: list[AnalysisInput],
+    *,
+    sigma_ev: float = 0.30,
+    wl_min: float = 200.0,
+    wl_max: float = 800.0,
+    num_points: int = 10000,
+    concentration_molar: float = REFERENCE_CONCENTRATION_MOLAR,
+    path_cm: float = REFERENCE_PATH_CM,
+    default_light_sources: list[str] | None = None,
+    custom_light_source_paths: list[Path] | None = None,
+    prefactor_mode: str = "constant",
+    sigma_mode: str = "fixed",
+    reorganization_ev: float = 0.30,
+    temperature_k: float = DEFAULT_TEMPERATURE_K,
+    calibration: Calibration | None = None,
+) -> tuple[list[RunResult], list[AnalysisSkip]]:
+    """High-level entry point: analyze prepared inputs and return results.
+
+    This is the importable-library counterpart of the CLI ``analyze`` command.
+    It runs the full Gaussian + Lorentzian broadening, Beer-Lambert, and overlap
+    pipeline against the requested reference light sources and returns the per
+    (sample, light-source, method) :class:`RunResult` records plus the list of
+    skipped inputs. Use :func:`export_results` to write tables/plots and
+    :func:`overlap_calculator.services.provenance.write_run_manifest` for
+    reproducibility metadata.
+
+    >>> from overlap_calculator import analyze
+    >>> from overlap_calculator.models import AnalysisInput
+    >>> callable(analyze)
+    True
+    """
+    return analyze_inputs(
+        items,
+        sigma_ev=sigma_ev,
+        wl_min=wl_min,
+        wl_max=wl_max,
+        num_points=num_points,
+        concentration_molar=concentration_molar,
+        path_cm=path_cm,
+        default_light_sources=default_light_sources,
+        custom_light_source_paths=custom_light_source_paths,
+        prefactor_mode=prefactor_mode,
+        sigma_mode=sigma_mode,
+        reorganization_ev=reorganization_ev,
+        temperature_k=temperature_k,
+        calibration=calibration,
+    )

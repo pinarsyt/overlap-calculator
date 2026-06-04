@@ -25,6 +25,7 @@ from overlap_calculator.exceptions import (
 from overlap_calculator.models import AnalysisInput, AnalysisSkip
 from overlap_calculator.services.analyzer import analyze_inputs, export_results, prepare_output_dir
 from overlap_calculator.services.input_generator import generate_inputs_with_skips
+from overlap_calculator.services.provenance import build_run_manifest, write_run_manifest
 from overlap_calculator.utils.errors import ErrorCode, format_error
 from overlap_calculator.utils.logging import format_log, set_request_id, setup_logging
 
@@ -255,6 +256,10 @@ def analyze_route() -> tuple[Response, int]:
     ranking_outputs = _get_bool(form, "ranking_outputs", settings.ranking_outputs)
     concentration_m = _get_float(form, "concentration_m", settings.reference_concentration_molar)
     path_cm = _get_float(form, "path_cm", settings.reference_path_cm)
+    prefactor_mode = form.get("prefactor_mode", settings.prefactor_mode)
+    sigma_mode = form.get("sigma_mode", settings.sigma_mode)
+    reorganization_ev = _get_float(form, "reorganization_ev", settings.reorganization_ev)
+    temperature_k = _get_float(form, "temperature_k", settings.temperature_k)
     default_light_sources_raw = form.get("default_light_sources", settings.default_light_sources)
     default_light_sources = [v.strip() for v in default_light_sources_raw.split(",") if v.strip()]
     sheet_overrides = _parse_sheet_overrides(form.get("sheet_overrides"))
@@ -328,6 +333,10 @@ def analyze_route() -> tuple[Response, int]:
                     path_cm=path_cm,
                     default_light_sources=default_light_sources,
                     custom_light_source_paths=custom_light_source_paths,
+                    prefactor_mode=prefactor_mode,
+                    sigma_mode=sigma_mode,
+                    reorganization_ev=reorganization_ev,
+                    temperature_k=temperature_k,
                 )
                 combined_skipped = [*skipped_scan, *skipped_items]
                 export_results(
@@ -338,6 +347,30 @@ def analyze_route() -> tuple[Response, int]:
                     plot_dpi=plot_dpi,
                     make_rankings=ranking_outputs,
                 )
+                manifest = build_run_manifest(
+                    results=results,
+                    items=items,
+                    parameters={
+                        "sigma_ev": sigma_ev,
+                        "prefactor_mode": prefactor_mode,
+                        "sigma_mode": sigma_mode,
+                        "reorganization_ev": reorganization_ev,
+                        "temperature_k": temperature_k,
+                        "wavelength_min_nm": wl_min,
+                        "wavelength_max_nm": wl_max,
+                        "num_points": num_points,
+                        "concentration_molar": concentration_m,
+                        "path_cm": path_cm,
+                        "default_light_sources": default_light_sources,
+                        "custom_light_source_count": len(custom_light_source_paths),
+                        "calibration": None,
+                    },
+                    skipped_items=combined_skipped,
+                    light_source_names=sorted(
+                        {result.light_source_name for result in results}
+                    ),
+                )
+                write_run_manifest(out_dir, manifest)
                 elapsed_s = time.perf_counter() - started
                 LOGGER.info(
                     format_log(

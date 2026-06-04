@@ -1,0 +1,85 @@
+{
+  "software_version": "1.1.0",
+  "git_commit": "5d9619ade4d430ffc6d2c5c3fe088e593c2eeb46",
+  "generated_at_utc": "2026-06-04T22:02:03.598985+00:00",
+  "parameters": {
+    "sigma_ev": 0.3,
+    "prefactor_mode": "constant",
+    "sigma_mode": "fixed",
+    "reorganization_ev": 0.3,
+    "temperature_k": 298.15,
+    "wavelength_min_nm": 200.0,
+    "wavelength_max_nm": 800.0,
+    "num_points": 10000,
+    "concentration_molar": 1e-05,
+    "path_cm": 1.0,
+    "default_light_sources": [
+      "AM15G",
+      "LEDB4",
+      "LEDB2",
+      "LEDB3",
+      "CIEFL10"
+    ],
+    "custom_light_source_count": 0,
+    "calibration": null
+  },
+  "light_sources": [
+    "AM15G",
+    "CIEFL10",
+    "LEDB2",
+    "LEDB3",
+    "LEDB4"
+  ],
+  "inputs": [
+    {
+      "sample_id": "3e_td",
+      "input_type": "theoretical",
+      "source_path": "input/files/slurm-2829207.out",
+      "series_name": null,
+      "sheet_name": null,
+      "sha256": "71ee374d0fe8b5b471205a5685235ecdd55c8ef6f1ef18972061b45111a1e803"
+    },
+    {
+      "sample_id": "3f_td",
+      "input_type": "theoretical",
+      "source_path": "input/files/slurm-2829212.out",
+      "series_name": null,
+      "sheet_name": null,
+      "sha256": "cb38933285a8edbd04eaab9e9188c1a96f8e56d1d9a0de50e36db2bf59a289b8"
+    },
+    {
+      "sample_id": "3g_td",
+      "input_type": "theoretical",
+      "source_path": "input/files/slurm-2829256.out",
+      "series_name": null,
+      "sheet_name": null,
+      "sha256": "677d26f3c12f3c0028496e800eef54ccc5c1d805c2d128f32f6772574542ee3d"
+    },
+    {
+      "sample_id": "4c_td",
+      "input_type": "theoretical",
+      "source_path": "input/files/slurm-2829260.out",
+      "series_name": null,
+      "sheet_name": null,
+      "sha256": "6b0aae98c3c9c5903ea8384aa971c1934d61721e6b80596f611663eeb34a5210"
+    },
+    {
+      "sample_id": "4g_td",
+      "input_type": "theoretical",
+      "source_path": "input/files/slurm-2829265.out",
+      "series_name": null,
+      "sheet_name": null,
+      "sha256": "8acc1e59a2a01c969de74e84f05f57b31a219488b4ea320def45e0cb1f7d6d23"
+    },
+    {
+      "sample_id": "Coumarin_1",
+      "input_type": "experimental",
+      "source_path": "input/files/organic_uvvis_photochemcad_dataset.xlsx",
+      "series_name": "Coumarin_1",
+      "sheet_name": "program_input_absorbance",
+      "sha256": "12e306c33f973a7a0d4e7c21ee088c9af25585b232997b962e854797d1fa318c"
+    }
+  ],
+  "results_count": 130,
+  "skipped_count": 0
+}
