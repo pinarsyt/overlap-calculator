@@ -90,12 +90,19 @@ def build_run_manifest(
     recorded relative to the run directory (never as an absolute machine path);
     the SHA-256 fingerprints the file content.
     """
-    seen_paths: set[str] = set()
+    # Dedup on the full linkage key, not the path alone: one Excel/CSV file can
+    # yield several entries (different series / sheet / sample) and each must be
+    # recorded so every result row traces back to its originating input.
+    seen_keys: set[tuple[str, str | None, str | None, str | None]] = set()
+    sha_by_path: dict[str, str | None] = {}
     inputs: list[dict[str, Any]] = []
     for item in items:
-        if item.source_path in seen_paths:
+        key = (item.source_path, item.sample_id, item.series_name, item.sheet_name)
+        if key in seen_keys:
             continue
-        seen_paths.add(item.source_path)
+        seen_keys.add(key)
+        if item.source_path not in sha_by_path:
+            sha_by_path[item.source_path] = _sha256_file(Path(item.source_path))
         inputs.append(
             {
                 "sample_id": item.sample_id,
@@ -103,7 +110,7 @@ def build_run_manifest(
                 "source_path": _relative_source(item.source_path),
                 "series_name": item.series_name,
                 "sheet_name": item.sheet_name,
-                "sha256": _sha256_file(Path(item.source_path)),
+                "sha256": sha_by_path[item.source_path],
             }
         )
 

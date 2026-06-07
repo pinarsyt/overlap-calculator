@@ -277,6 +277,37 @@ def test_load_calibration_toml(tmp_path: Path) -> None:
 # --------------------------------------------------------------------------- #
 # Run-manifest provenance + end-to-end with the new modes
 # --------------------------------------------------------------------------- #
+def test_manifest_keeps_distinct_series_from_one_source() -> None:
+    items = [
+        AnalysisInput(
+            input_type="experimental",
+            source_path="dye.xlsx",
+            sample_id="A",
+            series_name="A",
+            sheet_name="data",
+        ),
+        AnalysisInput(
+            input_type="experimental",
+            source_path="dye.xlsx",
+            sample_id="B",
+            series_name="B",
+            sheet_name="data",
+        ),
+        AnalysisInput(  # exact duplicate of the first -> collapsed
+            input_type="experimental",
+            source_path="dye.xlsx",
+            sample_id="A",
+            series_name="A",
+            sheet_name="data",
+        ),
+    ]
+    manifest = build_run_manifest(results=[], items=items, parameters={})
+    assert [entry["sample_id"] for entry in manifest["inputs"]] == ["A", "B"]
+    # Both entries come from one file, so they share the recorded path (cwd-independent).
+    paths = [entry["source_path"] for entry in manifest["inputs"]]
+    assert paths[0] == paths[1]
+
+
 def test_analyze_with_new_modes_and_manifest(tmp_path: Path) -> None:
     src = tmp_path / "sample.out"
     src.write_text(_TDDFT_TEXT, encoding="utf-8")

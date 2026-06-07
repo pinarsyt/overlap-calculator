@@ -1,7 +1,7 @@
 {
   "software_version": "1.1.0",
-  "git_commit": "5d9619ade4d430ffc6d2c5c3fe088e593c2eeb46",
-  "generated_at_utc": "2026-06-04T22:02:03.598985+00:00",
+  "git_commit": "9e8fd103608b8b745ffcda264ff80d7729399e68",
+  "generated_at_utc": "2026-06-07T09:16:06.109412+00:00",
   "parameters": {
     "sigma_ev": 0.3,
     "prefactor_mode": "constant",
@@ -76,6 +76,62 @@
       "input_type": "experimental",
       "source_path": "input/files/organic_uvvis_photochemcad_dataset.xlsx",
       "series_name": "Coumarin_1",
+      "sheet_name": "program_input_absorbance",
+      "sha256": "12e306c33f973a7a0d4e7c21ee088c9af25585b232997b962e854797d1fa318c"
+    },
+    {
+      "sample_id": "Coumarin_6",
+      "input_type": "experimental",
+      "source_path": "input/files/organic_uvvis_photochemcad_dataset.xlsx",
+      "series_name": "Coumarin_6",
+      "sheet_name": "program_input_absorbance",
+      "sha256": "12e306c33f973a7a0d4e7c21ee088c9af25585b232997b962e854797d1fa318c"
+    },
+    {
+      "sample_id": "Coumarin_314",
+      "input_type": "experimental",
+      "source_path": "input/files/organic_uvvis_photochemcad_dataset.xlsx",
+      "series_name": "Coumarin_314",
+      "sheet_name": "program_input_absorbance",
+      "sha256": "12e306c33f973a7a0d4e7c21ee088c9af25585b232997b962e854797d1fa318c"
+    },
+    {
+      "sample_id": "Fluorescein",
+      "input_type": "experimental",
+      "source_path": "input/files/organic_uvvis_photochemcad_dataset.xlsx",
+      "series_name": "Fluorescein",
+      "sheet_name": "program_input_absorbance",
+      "sha256": "12e306c33f973a7a0d4e7c21ee088c9af25585b232997b962e854797d1fa318c"
+    },
+    {
+      "sample_id": "Rhodamine_B",
+      "input_type": "experimental",
+      "source_path": "input/files/organic_uvvis_photochemcad_dataset.xlsx",
+      "series_name": "Rhodamine_B",
+      "sheet_name": "program_input_absorbance",
+      "sha256": "12e306c33f973a7a0d4e7c21ee088c9af25585b232997b962e854797d1fa318c"
+    },
+    {
+      "sample_id": "Rhodamine_6G",
+      "input_type": "experimental",
+      "source_path": "input/files/organic_uvvis_photochemcad_dataset.xlsx",
+      "series_name": "Rhodamine_6G",
+      "sheet_name": "program_input_absorbance",
+      "sha256": "12e306c33f973a7a0d4e7c21ee088c9af25585b232997b962e854797d1fa318c"
+    },
+    {
+      "sample_id": "Eosin_Y",
+      "input_type": "experimental",
+      "source_path": "input/files/organic_uvvis_photochemcad_dataset.xlsx",
+      "series_name": "Eosin_Y",
+      "sheet_name": "program_input_absorbance",
+      "sha256": "12e306c33f973a7a0d4e7c21ee088c9af25585b232997b962e854797d1fa318c"
+    },
+    {
+      "sample_id": "Pyrene",
+      "input_type": "experimental",
+      "source_path": "input/files/organic_uvvis_photochemcad_dataset.xlsx",
+      "series_name": "Pyrene",
       "sheet_name": "program_input_absorbance",
       "sha256": "12e306c33f973a7a0d4e7c21ee088c9af25585b232997b962e854797d1fa318c"
     }
