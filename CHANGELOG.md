@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to
 Semantic Versioning.
 
+## 1.1.1 - 2026-06-07
+
+### Fixed
+
+- **Run manifest provenance.** `run_manifest.json` now records each input
+  series / sheet as a distinct entry. A single Excel/CSV file feeding
+  multiple series previously collapsed to one manifest entry; the
+  deduplication now keys on the full linkage tuple (source path, sample
+  id, series name, sheet name). Each file is still hashed once.
+
 ## 1.1.0 - 2026-06-05
 
 ### Added
